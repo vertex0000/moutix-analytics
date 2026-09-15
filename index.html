@@ -102,6 +102,7 @@
   /* ---------- sidebar ---------- */
   .sidebar {
     width: var(--nav-w); flex-shrink: 0; background: var(--nav);
+    border-right: 1px solid var(--nav-line);
     position: sticky; top: 0; height: 100vh; height: 100dvh;
     display: flex; flex-direction: column; z-index: 50;
     padding-top: env(safe-area-inset-top, 0px);
@@ -419,6 +420,16 @@
   .sect-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 22px 0 10px; }
 </style>
 
+<script>
+  /* Applies the saved theme before first paint, so there is no flash.
+     Dark is the default; the header toggle switches it and remembers. */
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("moutix_theme"); } catch (e) {}
+    document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
+  })();
+</script>
+
 </head>
 <body>
 <div class="shell">
@@ -467,6 +478,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
           Refresh Data
         </button>
+        <button class="icon-btn" id="theme-btn" aria-label="Switch between dark and light theme" title="Switch theme" type="button">
+          <svg id="theme-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        </button>
         <div class="avatar" title="Moutix">M</div>
       </div>
     </header>
@@ -499,7 +513,7 @@
      CONFIG — the only thing you ever need to edit in this file.
      Paste a new /exec URL here if you redeploy the Apps Script.
      --------------------------------------------------------------- */
-  var API_URL = "https://script.google.com/macros/s/AKfycbyDON42tPdMx4bi4Fq8hJVx-glHBxrttMcrnAr5GswymnA8uJ3iDBW0bVlBUC7CMjY/exec";
+ var API_URL = "https://script.google.com/macros/s/AKfycbzE5eAGz7XxO6tbOvEH7N9B0ixuGef4rxEET8iPw0dovoWixnxTIubWkz2vT0hB5IcSSQ/exec";
   var REFRESH_MS = 60000;        // auto-refresh interval (ms)
   var JSONP_TIMEOUT_MS = 25000;  // give up on a JSONP request after this long
   var CACHE_BUST = true;         // append a timestamp so the browser never serves a stale copy
@@ -1434,6 +1448,10 @@
       { label: "Orders", value: purchases || NA, icon: "cart",
         sub: impressions ? '<span>CTR <b>' + safeDiv(clicks, impressions / 100).toFixed(2) + '%</b></span>' : "" },
       { label: "Cost Per Order", value: purchases ? inr(cpo) : NA, icon: "avg" },
+      { label: "CPC", value: clicks ? "₹" + safeDiv(spend, clicks).toFixed(2) : NA, icon: "ad",
+        sub: clicks ? '<span><b>' + Math.round(clicks).toLocaleString("en-IN") + '</b> clicks</span>' : "" },
+      { label: "CTR", value: impressions ? (safeDiv(clicks, impressions) * 100).toFixed(2) + "%" : NA, icon: "pct",
+        sub: impressions ? '<span><b>' + Math.round(impressions).toLocaleString("en-IN") + '</b> impressions</span>' : "" },
       { label: "Profit After Ads", value: inr(profitAfter), icon: "profit", tone: profitAfter >= 0 ? "good" : "crit" },
     ], "kauto");
 
@@ -1952,6 +1970,8 @@
       ["Tabs mapped", "Products · Amazon · Website Orders · Meta ads · Dashboard"],
       ["Write access", "None — this dashboard only reads, never modifies the sheet"],
       ["Auto refresh", (REFRESH_MS / 1000) + " seconds"],
+      ["Transport", "JSONP \u2014 works cross-origin from GitHub Pages"],
+      ["Theme", themeNow() === "dark" ? "Dark" : "Light"],
       ["Last successful sync", S.lastSync ? new Date(S.lastSync).toLocaleString("en-IN") : "Not yet synced"],
       ["Products rows loaded", S.products.length],
       ["Amazon rows loaded", S.amazon.length],
@@ -2292,6 +2312,25 @@
   }
 
   /* ---------- chrome wiring ---------- */
+  /* ---------- theme toggle (dark default, remembered per browser) ---------- */
+  var SUN = '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2.5 12h2M19.5 12h2M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/>';
+  var MOON = '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/>';
+  function themeNow() {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+  function paintThemeIcon() {
+    var ico = document.getElementById("theme-ico");
+    if (ico) ico.innerHTML = themeNow() === "dark" ? SUN : MOON;
+  }
+  paintThemeIcon();
+  document.getElementById("theme-btn").addEventListener("click", function () {
+    var next = themeNow() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("moutix_theme", next); } catch (e) {}
+    paintThemeIcon();
+    render();          // repaint so chart SVGs pick up the new theme tokens
+  });
+
   document.getElementById("burger").addEventListener("click", function () {
     document.getElementById("sidebar").classList.add("open");
     document.getElementById("scrim").classList.add("show");
