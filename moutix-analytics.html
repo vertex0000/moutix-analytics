@@ -1,0 +1,2281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moutix Analytics</title>
+<meta name="description" content="Moutix Jewelry business analytics dashboard">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232563eb'/%3E%3Ctext x='50' y='68' font-size='58' font-family='Inter,sans-serif' font-weight='700' fill='white' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+  :root { color-scheme: light dark; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  /* ============================================================
+     TOKENS — light first (reference look), dark variant provided
+     ============================================================ */
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-2: #f7f9fc;
+    --surface-3: #eef2f8;
+    --border: #e4e9f2;
+    --border-strong: #d4dbe8;
+    --text: #172033;
+    --text-2: #46536b;
+    --muted: #7d8aa3;
+    --primary: #2563eb;
+    --primary-hover: #1d4fd8;
+    --primary-soft: #e8f0fe;
+    --primary-ink: #ffffff;
+
+    --good: #12a150; --good-soft: #e6f6ed;
+    --warn: #d97706; --warn-soft: #fdf3e3;
+    --crit: #dc2626; --crit-soft: #fdeaea;
+    --info: #0284c7; --info-soft: #e4f2fb;
+
+    --c1: #2563eb; --c2: #60a5fa; --c3: #0ea5e9; --c4: #1e3a8a;
+    --c5: #93c5fd; --c6: #7c3aed;
+
+    --shadow-sm: 0 1px 2px rgba(23,32,51,.05);
+    --shadow: 0 1px 3px rgba(23,32,51,.06), 0 8px 20px -12px rgba(23,32,51,.14);
+
+    /* sidebar is navy in both themes */
+    --nav: #15213a;
+    --nav-2: #1d2b48;
+    --nav-line: #263554;
+    --nav-text: #9aa8c2;
+    --nav-dim: #63739a;
+    --nav-active-bg: #2563eb;
+
+    --nav-w: 248px;
+    --header-h: 62px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1420; --surface: #141d2c; --surface-2: #182233; --surface-3: #1e293c;
+      --border: #243149; --border-strong: #2e3d59;
+      --text: #e9eff8; --text-2: #b4c1d6; --muted: #8496b3;
+      --primary: #3b82f6; --primary-hover: #60a5fa; --primary-soft: #1b2b48; --primary-ink: #ffffff;
+      --good: #34d399; --good-soft: #14302a; --warn: #fbbf24; --warn-soft: #33290f;
+      --crit: #f87171; --crit-soft: #351b1d; --info: #38bdf8; --info-soft: #14293b;
+      --c1: #3b82f6; --c2: #60a5fa; --c3: #38bdf8; --c4: #818cf8; --c5: #93c5fd; --c6: #a78bfa;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.7);
+      --nav: #0f1826; --nav-2: #18233a; --nav-line: #22304a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1420; --surface: #141d2c; --surface-2: #182233; --surface-3: #1e293c;
+    --border: #243149; --border-strong: #2e3d59;
+    --text: #e9eff8; --text-2: #b4c1d6; --muted: #8496b3;
+    --primary: #3b82f6; --primary-hover: #60a5fa; --primary-soft: #1b2b48; --primary-ink: #ffffff;
+    --good: #34d399; --good-soft: #14302a; --warn: #fbbf24; --warn-soft: #33290f;
+    --crit: #f87171; --crit-soft: #351b1d; --info: #38bdf8; --info-soft: #14293b;
+    --c1: #3b82f6; --c2: #60a5fa; --c3: #38bdf8; --c4: #818cf8; --c5: #93c5fd; --c6: #a78bfa;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.7);
+    --nav: #0f1826; --nav-2: #18233a; --nav-line: #22304a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px; -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4 { margin: 0; font-weight: 600; text-wrap: balance; }
+  button, input, select { font-family: inherit; }
+  [hidden] { display: none !important; }
+  .num { font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ===================== shell ===================== */
+  .shell { display: flex; min-height: 100%; }
+
+  /* ---------- sidebar ---------- */
+  .sidebar {
+    width: var(--nav-w); flex-shrink: 0; background: var(--nav);
+    position: sticky; top: 0; height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column; z-index: 50;
+    padding-top: env(safe-area-inset-top, 0px);
+    transition: transform .22s ease;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 11px; padding: 18px 20px 16px;
+    border-bottom: 1px solid var(--nav-line);
+  }
+  .brand-mark {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    background: linear-gradient(140deg, #3b82f6, #1d4fd8);
+    display: grid; place-items: center; color: #fff;
+    font-weight: 800; font-size: 15px; letter-spacing: .02em;
+    box-shadow: 0 4px 12px -4px rgba(37,99,235,.7);
+  }
+  .brand-text .n { color: #fff; font-weight: 700; font-size: 15px; letter-spacing: .09em; line-height: 1.1; }
+  .brand-text .s { color: var(--nav-dim); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.35; margin-top: 3px; }
+
+  .nav-scroll { flex: 1; overflow-y: auto; padding: 12px 10px 18px; }
+  .nav-group + .nav-group { margin-top: 14px; }
+  .nav-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--nav-dim);
+    padding: 0 10px 7px; text-transform: uppercase;
+  }
+  .nav-item {
+    width: 100%; display: flex; align-items: center; gap: 11px;
+    padding: 9px 11px; border: 0; border-radius: 8px; background: transparent;
+    color: var(--nav-text); font-size: 13.5px; font-weight: 500; text-align: left;
+    cursor: pointer; margin-bottom: 2px; transition: background .12s, color .12s;
+  }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .9; }
+  .nav-item:hover { background: var(--nav-2); color: #fff; }
+  .nav-item.active { background: var(--nav-active-bg); color: #fff; font-weight: 600; box-shadow: 0 4px 12px -5px rgba(37,99,235,.9); }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge {
+    margin-left: auto; background: var(--crit); color: #fff; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 99px; line-height: 1.6;
+  }
+  .nav-item.active .nav-badge { background: rgba(255,255,255,.25); }
+
+  .nav-foot { padding: 12px 18px calc(14px + env(safe-area-inset-bottom,0px)); border-top: 1px solid var(--nav-line); }
+  .nav-source { font-size: 10.5px; color: var(--nav-dim); line-height: 1.5; }
+  .nav-source b { color: var(--nav-text); font-weight: 600; }
+
+  .scrim { display: none; }
+  @media (max-width: 1080px) {
+    .sidebar { position: fixed; left: 0; transform: translateX(-100%); }
+    .sidebar.open { transform: none; box-shadow: 24px 0 60px -24px rgba(0,0,0,.55); }
+    .scrim.show { display: block; position: fixed; inset: 0; background: rgba(8,12,20,.5); z-index: 49; }
+  }
+
+  /* ---------- main + header ---------- */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .header {
+    position: sticky; top: 0; z-index: 30; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    min-height: var(--header-h); display: flex; align-items: center; gap: 14px;
+    padding: 10px clamp(14px, 2.2vw, 26px);
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    flex-wrap: wrap;
+  }
+  .h-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-2); display: grid; place-items: center;
+    cursor: pointer; flex-shrink: 0; position: relative; transition: background .12s, border-color .12s;
+  }
+  .icon-btn:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .icon-btn .badge {
+    position: absolute; top: -5px; right: -5px; background: var(--crit); color: #fff;
+    font-size: 9.5px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 99px;
+    display: grid; place-items: center; padding: 0 4px; border: 2px solid var(--surface);
+  }
+  .burger { display: none; }
+  @media (max-width: 1080px) { .burger { display: grid; } }
+
+  .page-h { min-width: 0; }
+  .page-h .crumb { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .page-h h1 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; margin-top: 1px; }
+
+  .h-right { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .searchbox { position: relative; }
+  .searchbox input {
+    width: 190px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 13px;
+    padding: 0 10px 0 32px;
+  }
+  .searchbox input::placeholder { color: var(--muted); }
+  .searchbox svg { position: absolute; left: 10px; top: 9px; width: 15px; height: 15px; color: var(--muted); pointer-events: none; }
+  @media (max-width: 700px) { .searchbox input { width: 130px; } }
+
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px;
+    border-radius: 99px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+    background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); white-space: nowrap;
+  }
+  .live-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .live-pill.live { color: var(--good); background: var(--good-soft); border-color: transparent; }
+  .live-pill.live .dot { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .live-pill.stale { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+  .live-pill.err { color: var(--crit); background: var(--crit-soft); border-color: transparent; }
+  @media (prefers-reduced-motion: reduce) { .live-pill.live .dot { animation: none; } }
+
+  .sync-label { font-size: 11.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  @media (max-width: 860px) { .sync-label { display: none; } }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px;
+    border: 0; border-radius: 8px; background: var(--primary); color: var(--primary-ink);
+    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    transition: background .12s;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary svg { width: 14px; height: 14px; }
+  .btn-primary.spinning svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .btn-primary.spinning svg { animation: none; } }
+
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(140deg,#3b82f6,#1d4fd8);
+    color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+
+  /* notifications dropdown */
+  .dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0; width: min(330px, 86vw);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 6px; z-index: 60; display: none;
+  }
+  .dropdown.show { display: block; }
+  .dropdown h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 9px 10px 7px; }
+  .dd-item { display: flex; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; line-height: 1.45; }
+  .dd-item:hover { background: var(--surface-2); }
+  .dd-item .ico { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .dd-item .t { font-weight: 600; }
+  .dd-item .s { color: var(--muted); font-size: 12px; }
+  .notif-wrap { position: relative; }
+
+  /* ---------- content ---------- */
+  .content { padding: 18px clamp(14px, 2.2vw, 26px) 56px; flex: 1; }
+
+  .banner {
+    display: none; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5;
+    padding: 11px 14px; border-radius: 10px; margin-bottom: 16px;
+    background: var(--warn-soft); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  }
+  .banner.show { display: flex; }
+  .banner svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* filters */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+  }
+  .fld { display: flex; flex-direction: column; gap: 4px; }
+  .fld label { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .fld select, .fld input {
+    height: 32px; min-width: 128px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 12.5px; padding: 0 8px;
+  }
+  .clear-btn {
+    margin-left: auto; height: 32px; padding: 0 12px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--primary);
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .clear-btn:hover { background: var(--primary-soft); }
+  .filter-count { font-size: 12px; color: var(--muted); align-self: center; }
+
+  /* grid */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+  .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; }
+  .c6 { grid-column: span 6; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+  @media (max-width: 1180px) { .c3 { grid-column: span 6; } .c4, .c5 { grid-column: span 6; } .c7, .c8 { grid-column: span 12; } }
+  @media (max-width: 760px) { .c3, .c4, .c5, .c6, .c7, .c8 { grid-column: span 12; } }
+
+  /* KPI */
+  .kpis { display: grid; gap: 12px; margin-bottom: 14px; }
+  .kpis.k5 { grid-template-columns: repeat(5, 1fr); }
+  .kpis.k4 { grid-template-columns: repeat(4, 1fr); }
+  .kpis.kauto { grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); }
+  @media (max-width: 1180px) { .kpis.k5, .kpis.k4 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 760px) { .kpis.k5, .kpis.k4, .kpis.kauto { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 420px) { .kpis.k5, .kpis.k4, .kpis.kauto { grid-template-columns: 1fr; } }
+
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 11px;
+    padding: 14px 15px 13px; box-shadow: var(--shadow-sm); min-width: 0;
+  }
+  .kpi .k-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .kpi .k-label { font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi .k-ico { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); flex-shrink: 0; }
+  .kpi .k-ico svg { width: 13px; height: 13px; }
+  .kpi .k-val { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-top: 9px; line-height: 1.15; }
+  .kpi .k-val.sm { font-size: 16px; }
+  .kpi .k-val.good { color: var(--good); } .kpi .k-val.warn { color: var(--warn); } .kpi .k-val.crit { color: var(--crit); }
+  .kpi .k-sub { font-size: 11.5px; color: var(--muted); margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .kpi .k-sub b { color: var(--text-2); font-weight: 600; }
+  .kpi.na .k-val { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  /* cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow-sm); overflow: hidden; height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .card-h {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 14px 16px 10px; flex-wrap: wrap;
+  }
+  .card-h h3 { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+  .card-h .sub { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .card-b { padding: 4px 16px 16px; flex: 1; }
+  .card-b.flush { padding: 0 0 0; }
+
+  .tabs { display: inline-flex; gap: 2px; background: var(--surface-3); padding: 3px; border-radius: 8px; }
+  .tabs button {
+    border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600;
+    padding: 5px 11px; border-radius: 6px; cursor: pointer;
+  }
+  .tabs button.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+  .empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 34px 16px; color: var(--muted); font-size: 13px; text-align: center;
+  }
+  .empty svg { width: 26px; height: 26px; opacity: .45; }
+
+  /* charts */
+  .chart { width: 100%; height: auto; display: block; overflow: visible; }
+  .chart text { fill: var(--muted); font-family: 'Inter', sans-serif; font-size: 10.5px; }
+  .chart .vlabel { fill: var(--text); font-weight: 600; }
+  .chart .grid-l { stroke: var(--border); stroke-width: 1; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .legend b { color: var(--text); font-weight: 600; }
+
+  /* ranking list (reference right panel) */
+  .rank-list { display: flex; flex-direction: column; }
+  .rank-row { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-top: 1px solid var(--border); }
+  .rank-row:first-child { border-top: 0; }
+  .rank-n {
+    width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 11px; font-weight: 700; background: var(--surface-3); color: var(--text-2); flex-shrink: 0;
+  }
+  .rank-row:nth-child(-n+3) .rank-n { background: var(--nav); color: #fff; }
+  .rank-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank-sub { font-size: 11px; color: var(--muted); }
+  .rank-val { margin-left: auto; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* tables */
+  .tbl-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 0 16px 12px; }
+  .tbl-tools input[type="search"] {
+    height: 32px; flex: 1; min-width: 160px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 12.5px; padding: 0 10px;
+  }
+  .tbl-wrap { overflow-x: auto; border-top: 1px solid var(--border); }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  thead th {
+    text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--muted); background: var(--surface-2); padding: 10px 13px; white-space: nowrap;
+    cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); position: sticky; top: 0;
+  }
+  thead th:hover { color: var(--text-2); }
+  thead th.sorted { color: var(--primary); }
+  thead th .arr { font-size: 8px; margin-left: 3px; }
+  tbody td { padding: 11px 13px; font-size: 13px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-2); }
+  tbody td.strong { color: var(--text); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr.click { cursor: pointer; }
+  tbody tr.click:hover td { background: var(--surface-2); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.pos { color: var(--good); font-weight: 600; } td.neg { color: var(--crit); font-weight: 600; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px;
+    font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.crit { background: var(--crit-soft); color: var(--crit); }
+  .chip.info { background: var(--info-soft); color: var(--info); }
+  .chip.blue { background: var(--primary-soft); color: var(--primary); }
+  .chip.grey { background: var(--surface-3); color: var(--muted); }
+
+  .pager { display: flex; align-items: center; gap: 8px; justify-content: flex-end; padding: 12px 16px; font-size: 12px; color: var(--muted); }
+  .pager button {
+    height: 28px; padding: 0 11px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .pager button:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-strong); }
+  .pager button:disabled { opacity: .45; cursor: default; }
+
+  /* drawer */
+  .ovl { position: fixed; inset: 0; background: rgba(10,16,28,.42); z-index: 70; display: none; }
+  .ovl.show { display: block; }
+  .drawer {
+    position: fixed; top: 0; right: 0; height: 100%; width: min(430px, 94vw); z-index: 71;
+    background: var(--surface); border-left: 1px solid var(--border); overflow-y: auto;
+    transform: translateX(100%); transition: transform .2s ease;
+    padding: 20px 22px calc(28px + env(safe-area-inset-bottom,0px));
+    padding-top: calc(20px + env(safe-area-inset-top,0px));
+  }
+  .drawer.show { transform: none; }
+  .drawer-x { position: absolute; top: 16px; right: 16px; }
+  .kv { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .kv .k { color: var(--muted); }
+  .kv .v { font-weight: 600; text-align: right; color: var(--text); }
+
+  .note { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .sect-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 22px 0 10px; }
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <div class="scrim" id="scrim"></div>
+
+  <nav class="sidebar" id="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div class="brand-text">
+        <div class="n">MOUTIX</div>
+        <div class="s">JEWELRY BUSINESS<br>ANALYTICS</div>
+      </div>
+    </div>
+    <div class="nav-scroll" id="nav"></div>
+    <div class="nav-foot">
+      <div class="nav-source" id="nav-source">Source: <b>Google Sheet</b><br>Read-only · never modified</div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <div class="h-left">
+        <button class="icon-btn burger" id="burger" aria-label="Open navigation" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="page-h">
+          <div class="crumb" id="crumb">Overall</div>
+          <h1 id="ptitle">Dashboard</h1>
+        </div>
+      </div>
+      <div class="h-right">
+        <div class="searchbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="global-search" placeholder="Search orders, SKUs…" aria-label="Search">
+        </div>
+        <div class="notif-wrap">
+          <button class="icon-btn" id="notif-btn" aria-label="Notifications" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="badge" id="notif-badge" hidden>0</span>
+          </button>
+          <div class="dropdown" id="notif-dd"><h4>Alerts</h4><div id="notif-list"></div></div>
+        </div>
+        <span class="live-pill" id="live-pill"><span class="dot"></span><span id="live-text">CONNECTING</span></span>
+        <span class="sync-label" id="sync-label">Last updated —</span>
+        <button class="btn-primary" id="refresh" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+          Refresh Data
+        </button>
+        <div class="avatar" title="Moutix">M</div>
+      </div>
+    </header>
+
+    <div class="banner" id="banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+      <span id="banner-text"></span>
+    </div>
+
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div class="ovl" id="ovl"></div>
+<aside class="drawer" id="drawer" aria-label="Order detail">
+  <button class="icon-btn drawer-x" id="drawer-x" aria-label="Close" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <div id="drawer-body"></div>
+</aside>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================
+     CONFIG — live data sources (read-only, never writes)
+     ========================================================= */
+  /* ---------------------------------------------------------------
+     CONFIG — the only thing you ever need to edit in this file.
+     Paste a new /exec URL here if you redeploy the Apps Script.
+     --------------------------------------------------------------- */
+  var API_URL = "https://script.google.com/macros/s/AKfycby3qzB6Fo59YeeQbqiagkFGqS9Hq1_xZX8hWGqg0U0uXUTzl2iCDqcyLHNN88iMMwTk/exec";
+  var REFRESH_MS = 60000;        // auto-refresh interval (ms)
+  var CACHE_BUST = true;         // append a timestamp so the browser never serves a stale copy
+
+  // Only used if this same file is ever opened inside Claude, where direct
+  // network calls are blocked and the Google Drive connector is the fallback.
+  var SHEET_ID = "1wT4e2h1b4TlZ_cgI-in1V1oeFaDgl3P8T6pVdSmeGDo";
+  var MCP_SERVER = "Google_Drive";
+  var MCP_TOOL = "read_file_content";
+  var NA = "Data not available";
+
+  /* =========================================================
+     helpers
+     ========================================================= */
+  function n(v) {
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    var s = String(v === undefined || v === null ? "" : v).replace(/[₹,\s]/g, "").replace(/\\/g, "");
+    var m = s.match(/-?\d*\.?\d+/);
+    return m ? parseFloat(m[0]) : 0;
+  }
+  function has(v) { return v !== undefined && v !== null && String(v).trim() !== ""; }
+  function inr(v, naText) {
+    if (!has(v) && v !== 0) return naText === undefined ? NA : naText;
+    var x = n(v); var sign = x < 0 ? "-" : "";
+    return sign + "₹" + Math.abs(Math.round(x)).toLocaleString("en-IN");
+  }
+  function inrShort(v) {
+    var x = n(v); var sign = x < 0 ? "-" : ""; x = Math.abs(x);
+    if (x >= 10000000) return sign + "₹" + (x / 10000000).toFixed(1) + "Cr";
+    if (x >= 100000) return sign + "₹" + (x / 100000).toFixed(1) + "L";
+    if (x >= 1000) return sign + "₹" + (x / 1000).toFixed(x >= 10000 ? 0 : 1) + "k";
+    return sign + "₹" + Math.round(x);
+  }
+  function pctFmt(v, digits) {
+    if (!has(v) && v !== 0) return NA;
+    return n(v).toFixed(digits === undefined ? 1 : digits) + "%";
+  }
+  function esc(s) {
+    return String(s === undefined || s === null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function fmtDate(d) {
+    if (!has(d)) return "—";
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return esc(String(d));
+    return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function fmtShortDate(d) {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  }
+  function clock(ts) { return new Date(ts).toLocaleTimeString("en-GB", { hour12: false }); }
+  function uniq(a) { var o = []; a.forEach(function (v) { if (has(v) && o.indexOf(v) === -1) o.push(v); }); return o; }
+  function sum(a, f) { return a.reduce(function (t, x) { return t + f(x); }, 0); }
+  function safeDiv(a, b) { return b ? a / b : 0; }
+
+  /* =========================================================
+     PARSING — handles BOTH shapes:
+       1. Apps Script JSON: {Products:[...], Amazon:[...], "Website Orders":[...], "Meta ads":[...], Dashboard:[...]}
+       2. Drive connector markdown tables (leading blank row + separator before the real header)
+     ========================================================= */
+  function cleanCell(c) {
+    return String(c === undefined || c === null ? "" : c)
+      .replace(/^\s*\\?\[merged\]\s*/i, "")
+      .replace(/\\([\\`*_{}\[\]()#+\-.!|~])/g, "$1")
+      .trim();
+  }
+  function splitRow(line) {
+    var t = line.trim();
+    if (t.charAt(0) === "|") t = t.slice(1);
+    if (t.charAt(t.length - 1) === "|") t = t.slice(0, -1);
+    return t.split("|").map(cleanCell);
+  }
+  // Google exports alignment rows as ":-:" (a single dash), not ":---:" — match both.
+  function isSep(cells) {
+    return cells.length > 0 && cells.every(function (c) { return /^:?-+:?$/.test(c) || c === ""; })
+      && cells.some(function (c) { return c.indexOf("-") !== -1; });
+  }
+  function isBlank(cells) { return cells.every(function (c) { return c === ""; }); }
+
+  // THE FIX: skip leading blank/separator rows to find the true header row.
+  function toTable(rawRows) {
+    var i = 0;
+    while (i < rawRows.length && (isBlank(rawRows[i]) || isSep(rawRows[i]))) i++;
+    var header = rawRows[i] || [];
+    var body = rawRows.slice(i + 1).filter(function (r) { return !isSep(r) && !isBlank(r); });
+    return { header: header, rows: body };
+  }
+  function parseMarkdownTables(md) {
+    var lines = String(md).split("\n");
+    var blocks = [], cur = [];
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].trim().charAt(0) === "|") cur.push(splitRow(lines[i]));
+      else if (cur.length) { blocks.push(cur); cur = []; }
+    }
+    if (cur.length) blocks.push(cur);
+    return blocks.map(toTable);
+  }
+  function dedupe(header) {
+    var seen = {};
+    return header.map(function (h, idx) {
+      var k = h || ("Column " + (idx + 1));
+      if (seen[k] === undefined) { seen[k] = 1; return k; }
+      seen[k]++; return k + " " + seen[k];
+    });
+  }
+  function objectify(table) {
+    if (!table || !table.header.length) return [];
+    var head = dedupe(table.header);
+    return table.rows.map(function (r) {
+      var o = {};
+      head.forEach(function (h, i) { o[h] = r[i] === undefined ? "" : r[i]; });
+      return o;
+    }).filter(function (o) {
+      return Object.keys(o).some(function (k) { return has(o[k]); });
+    });
+  }
+  function matchTable(tables, needles) {
+    for (var i = 0; i < tables.length; i++) {
+      var h = tables[i].header.join("|").toLowerCase();
+      var ok = needles.every(function (x) { return h.indexOf(x.toLowerCase()) !== -1; });
+      if (ok) return tables[i];
+    }
+    return null;
+  }
+  function buildDashboardMap(tables) {
+    var map = {};
+    tables.forEach(function (t) {
+      var all = [t.header].concat(t.rows);
+      var looksLikeKv = all.some(function (r) { return /total\s+revenue|net\s+business\s+profit|total\s+orders/i.test(r[0] || ""); });
+      if (!looksLikeKv) return;
+      all.forEach(function (r) {
+        var k = cleanCell(r[0]), v = r[1] === undefined ? "" : cleanCell(r[1]);
+        if (!k || !has(v)) return;
+        if (/^b\s*u\s*s\s*i\s*n\s*e\s*s\s*s/i.test(k)) return;
+        if (!map[k]) map[k] = v;
+      });
+    });
+    return map;
+  }
+  function rowsFromAny(v) {
+    if (!v) return [];
+    if (Array.isArray(v)) {
+      if (!v.length) return [];
+      if (Array.isArray(v[0])) return objectify(toTable(v.map(function (r) { return r.map(cleanCell); })));
+      return v; // already array of objects
+    }
+    return [];
+  }
+  function extractData(payload) {
+    var out = { products: [], amazon: [], website: [], ads: [], dash: {}, shape: "unknown" };
+    var obj = payload;
+    if (typeof payload === "string") {
+      var s = payload.trim();
+      if (s.charAt(0) === "{" || s.charAt(0) === "[") { try { obj = JSON.parse(s); } catch (e) { obj = null; } }
+      else obj = null;
+    }
+
+    // Shape 1 — Apps Script style, keyed by tab name
+    if (obj && typeof obj === "object" && !Array.isArray(obj) &&
+        (obj.Products || obj.Amazon || obj["Website Orders"] || obj["Meta ads"] || obj.Dashboard)) {
+      out.products = rowsFromAny(obj.Products);
+      out.amazon = rowsFromAny(obj.Amazon);
+      out.website = rowsFromAny(obj["Website Orders"]);
+      out.ads = rowsFromAny(obj["Meta ads"]);
+      var d = obj.Dashboard;
+      if (Array.isArray(d)) {
+        d.forEach(function (r) {
+          if (Array.isArray(r) && r.length >= 2 && has(r[0])) out.dash[cleanCell(r[0])] = cleanCell(r[1]);
+          else if (r && typeof r === "object") {
+            var ks = Object.keys(r);
+            if (ks.length >= 2 && has(r[ks[0]])) out.dash[cleanCell(r[ks[0]])] = cleanCell(r[ks[1]]);
+          }
+        });
+      } else if (d && typeof d === "object") out.dash = d;
+      out.shape = "api";
+      return out;
+    }
+
+    // Shape 2 — markdown tables from the Drive connector
+    var text = "";
+    if (obj && typeof obj === "object" && typeof obj.fileContent === "string") text = obj.fileContent;
+    else if (typeof payload === "string") text = payload;
+    else if (obj && typeof obj === "object" && typeof obj.content === "string") text = obj.content;
+    else if (obj && typeof obj === "object" && typeof obj.text === "string") text = obj.text;
+    else text = typeof payload === "string" ? payload : "";
+
+    if (!text) return out;
+    var tables = parseMarkdownTables(text);
+    out.products = objectify(matchTable(tables, ["sku", "product name", "selling price"]));
+    out.amazon = objectify(matchTable(tables, ["order date", "amazon fee"]));
+    out.website = objectify(matchTable(tables, ["order date", "per unit cost"]));
+    if (!out.website.length) {
+      // fall back: an order table that is not the amazon one
+      var candidates = tables.filter(function (t) {
+        var h = t.header.join("|").toLowerCase();
+        return h.indexOf("order date") !== -1 && h.indexOf("amazon fee") === -1;
+      });
+      if (candidates.length) out.website = objectify(candidates[0]);
+    }
+    out.ads = objectify(matchTable(tables, ["campaign", "impressions"]));
+    out.dash = buildDashboardMap(tables);
+    out.shape = "sheet";
+    return out;
+  }
+
+  function pick(row, keys) {
+    for (var i = 0; i < keys.length; i++) if (row[keys[i]] !== undefined && String(row[keys[i]]).trim() !== "") return row[keys[i]];
+    return "";
+  }
+  function normOrder(r, channel) {
+    var revenue = n(pick(r, ["Revenue"]));
+    var qty = n(pick(r, ["Qty"]));
+    var price = n(pick(r, ["Selling Price"]));
+    if (!revenue && qty && price) revenue = qty * price;
+    return {
+      Channel: channel,
+      OrderDate: pick(r, ["Order Date", "Date"]),
+      OrderID: pick(r, ["Order ID"]),
+      SKU: pick(r, ["SKU"]),
+      ProductName: pick(r, ["Product Name"]),
+      Qty: qty,
+      SellingPrice: price,
+      Revenue: revenue,
+      ProductCost: n(pick(r, ["Total Product Cost", "Product Cost"])) || (n(pick(r, ["Per Unit Cost"])) * qty),
+      AmazonFee: n(pick(r, ["Amazon Fee"])),
+      HasAmazonFee: has(pick(r, ["Amazon Fee"])),
+      ShippingFee: n(pick(r, ["Shipping Fee", "Shipping"])),
+      AdSpend: n(pick(r, ["Ad Spend"])),
+      RTOCharges: n(pick(r, ["RTO Charges"])),
+      Packaging: n(pick(r, ["Packaging Cost"])),
+      NetProfit: n(pick(r, ["Net Profit"])),
+      ProfitPct: pick(r, ["Profit %"]),
+      OrderStatus: pick(r, ["Order Status"]),
+      CustomerState: pick(r, ["Customer State"]),
+      PaymentStatus: pick(r, ["Payment Status"]),
+      Courier: pick(r, ["Courier Partner"]),
+      ReturnReason: pick(r, ["Return Reason"]),
+      AmazonFeePct: pick(r, ["Amazon Fee %"]),
+    };
+  }
+
+  /* =========================================================
+     state
+     ========================================================= */
+  var S = {
+    loaded: false, source: null, lastSync: null,
+    products: [], amazon: [], website: [], ads: [], dash: {},
+    orders: [],
+    route: "dashboard",
+    tbl: {},        // per-table ui state
+    ui: {},         // per-page toggles
+    globalSearch: "",
+    f: { from: "", to: "", channel: "all", status: "all", state: "all", product: "all", payment: "all" },
+  };
+
+  function rebuildOrders() {
+    S.orders = S.amazon.map(function (r) { return normOrder(r, "Amazon"); })
+      .concat(S.website.map(function (r) { return normOrder(r, "Website"); }))
+      .filter(function (o) { return has(o.OrderID) || has(o.SKU) || o.Revenue; });
+  }
+  function fOrders(extra) {
+    var f = S.f;
+    return S.orders.filter(function (o) {
+      if (f.channel !== "all" && o.Channel !== f.channel) return false;
+      if (f.status !== "all" && o.OrderStatus !== f.status) return false;
+      if (f.state !== "all" && o.CustomerState !== f.state) return false;
+      if (f.product !== "all" && o.SKU !== f.product) return false;
+      if (f.payment !== "all" && o.PaymentStatus !== f.payment) return false;
+      if (f.from && o.OrderDate && String(o.OrderDate).slice(0, 10) < f.from) return false;
+      if (f.to && o.OrderDate && String(o.OrderDate).slice(0, 10) > f.to) return false;
+      if (extra && !extra(o)) return false;
+      return true;
+    });
+  }
+  function activeFilterCount() {
+    var f = S.f, c = 0;
+    if (f.from || f.to) c++;
+    ["channel", "status", "state", "product", "payment"].forEach(function (k) { if (f[k] !== "all") c++; });
+    return c;
+  }
+
+  /* =========================================================
+     status helpers
+     ========================================================= */
+  var STATUS_ORDER = ["Delivered", "Processing", "Cancelled", "Refunded", "RTO", "Exchange"];
+  function statusTone(s) {
+    var t = String(s || "").toLowerCase();
+    if (t.indexOf("deliver") !== -1) return "good";
+    if (t.indexOf("process") !== -1 || t.indexOf("ship") !== -1 || t.indexOf("transit") !== -1) return "blue";
+    if (t.indexOf("exchange") !== -1) return "warn";
+    if (t.indexOf("rto") !== -1 || t.indexOf("cancel") !== -1 || t.indexOf("refund") !== -1 || t.indexOf("return") !== -1) return "crit";
+    if (!t) return "grey";
+    return "info";
+  }
+  function isRTO(o) { return /rto/i.test(o.OrderStatus || ""); }
+  function stockState(p) {
+    var cur = n(pick(p, ["Current Stock"]));
+    var alert = String(pick(p, ["Reorder Alert"]) || "").toLowerCase();
+    if (cur <= 0) return { key: "out", label: "Out of Stock", tone: "crit" };
+    if (alert.indexOf("urgent") !== -1 || alert.indexOf("reorder") !== -1) return { key: "urgent", label: "Urgent Reorder", tone: "crit" };
+    if (alert.indexOf("low") !== -1) return { key: "low", label: "Low Stock", tone: "warn" };
+    if (alert.indexOf("ok") !== -1 || alert.indexOf("healthy") !== -1) return { key: "healthy", label: "Healthy", tone: "good" };
+    return { key: "healthy", label: "Healthy", tone: "good" };
+  }
+
+  /* =========================================================
+     CHARTS (inline SVG, blue reference palette)
+     ========================================================= */
+  var SERIES = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)"];
+
+  function yTicks(max, integer) {
+    var step;
+    if (integer) {
+      step = Math.max(1, Math.ceil((max || 1) / 4));
+    } else {
+      step = Math.pow(10, Math.floor(Math.log10(max || 1)));
+      var mult = (max || 1) / step;
+      if (mult > 5) step *= 2; else if (mult <= 2) step /= 2;
+    }
+    var ticks = [], v = 0;
+    while (v <= max * 1.0001 && ticks.length < 8) { ticks.push(v); v += step; }
+    if (!ticks.length || ticks[ticks.length - 1] < max) ticks.push((ticks[ticks.length - 1] || 0) + step);
+    return ticks;
+  }
+  function intFmt(v) { return String(Math.round(v)); }
+
+  function lineChart(series, opts) {
+    opts = opts || {};
+    var W = 700, H = opts.height || 250, pL = 58, pR = 18, pT = 14, pB = 34;
+    var pts = [];
+    series.forEach(function (s) { s.points.forEach(function (p) { pts.push(p.y); }); });
+    if (!pts.length) return emptyBlock("No data for this period");
+    var rawMax = Math.max.apply(null, pts.concat([0]));
+    var rawMin = Math.min.apply(null, pts.concat([0]));
+    var ticks = yTicks(rawMax || 1, opts.integer);
+    var top = Math.max(ticks[ticks.length - 1], rawMax || 1);
+    var bottom = Math.min(0, rawMin);
+    var labels = series[0].points.map(function (p) { return p.x; });
+    var cnt = labels.length;
+    function X(i) { return cnt <= 1 ? (pL + (W - pL - pR) / 2) : pL + i * (W - pL - pR) / (cnt - 1); }
+    function Y(v) { return H - pB - ((v - bottom) / ((top - bottom) || 1)) * (H - pT - pB); }
+
+    var gridSvg = ticks.map(function (t) {
+      var y = Y(t);
+      return '<line class="grid-l" x1="' + pL + '" x2="' + (W - pR) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>' +
+        '<text x="' + (pL - 9) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + (opts.yFmt ? opts.yFmt(t) : inrShort(t)) + '</text>';
+    }).join("");
+
+    var body = series.map(function (s, si) {
+      var color = s.color || SERIES[si % SERIES.length];
+      var gid = "grad" + si + "_" + Math.random().toString(36).slice(2, 7);
+      var line = s.points.map(function (p, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(p.y).toFixed(1); }).join(" ");
+      var area = "";
+      if (opts.area && si === 0 && cnt > 1) {
+        area = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.26"/>' +
+          '<stop offset="100%" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
+          '<path d="' + line + ' L' + X(cnt - 1).toFixed(1) + ' ' + Y(bottom).toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + Y(bottom).toFixed(1) + ' Z" fill="url(#' + gid + ')"/>';
+      }
+      var dots = s.points.map(function (p, i) {
+        var lbl = (cnt <= 6) ? '<text class="vlabel" x="' + X(i).toFixed(1) + '" y="' + (Y(p.y) - 10).toFixed(1) + '" text-anchor="middle">' + (opts.yFmt ? opts.yFmt(p.y) : inrShort(p.y)) + '</text>' : "";
+        return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="3.6" fill="var(--surface)" stroke="' + color + '" stroke-width="2.4"/>' + (si === 0 ? lbl : "");
+      }).join("");
+      var path = cnt > 1 ? '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>' : "";
+      return area + path + dots;
+    }).join("");
+
+    var xs = labels.map(function (l, i) {
+      var every = Math.ceil(cnt / 9);
+      if (cnt > 9 && i % every !== 0 && i !== cnt - 1) return "";
+      return '<text x="' + X(i).toFixed(1) + '" y="' + (H - 11) + '" text-anchor="middle">' + esc(opts.xFmt ? opts.xFmt(l) : l) + '</text>';
+    }).join("");
+
+    return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img">' +
+      gridSvg + '<line class="grid-l" x1="' + pL + '" x2="' + pL + '" y1="' + pT + '" y2="' + (H - pB) + '"/>' +
+      body + xs + '</svg>';
+  }
+
+  function columnChart(items, opts) {
+    opts = opts || {};
+    if (!items.length) return emptyBlock();
+    var W = 700, H = opts.height || 240, pL = 58, pR = 16, pT = 18, pB = 44;
+    var max = Math.max.apply(null, items.map(function (i) { return Math.abs(i.value); }).concat([1]));
+    var ticks = yTicks(max, opts.integer);
+    var top = ticks[ticks.length - 1] || 1;
+    var slot = (W - pL - pR) / items.length;
+    var bw = Math.min(opts.barWidth || 46, slot * 0.58);
+    function Y(v) { return H - pB - (v / top) * (H - pT - pB); }
+    var grid = ticks.map(function (t) {
+      var y = Y(t);
+      return '<line class="grid-l" x1="' + pL + '" x2="' + (W - pR) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>' +
+        '<text x="' + (pL - 9) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + (opts.yFmt ? opts.yFmt(t) : inrShort(t)) + '</text>';
+    }).join("");
+    var bars = items.map(function (it, i) {
+      var cx = pL + slot * i + slot / 2;
+      var v = Math.abs(it.value);
+      var h = Math.max(2, (v / top) * (H - pT - pB));
+      var y = H - pB - h;
+      var color = it.color || SERIES[i % SERIES.length];
+      return '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="5" fill="' + color + '"/>' +
+        '<text class="vlabel" x="' + cx.toFixed(1) + '" y="' + (y - 7).toFixed(1) + '" text-anchor="middle">' + esc(opts.fmt ? opts.fmt(it.value) : inrShort(it.value)) + '</text>' +
+        '<text x="' + cx.toFixed(1) + '" y="' + (H - 15) + '" text-anchor="middle">' + esc(trunc(it.label, 14)) + '</text>';
+    }).join("");
+    return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img">' + grid + bars + '</svg>';
+  }
+
+  function barsH(items, opts) {
+    opts = opts || {};
+    if (!items.length) return emptyBlock();
+    var W = 700, rowH = opts.rowH || 28, gap = 12, pL = opts.labelW || 150, pR = 82, top = 6;
+    var max = Math.max.apply(null, items.map(function (i) { return Math.abs(i.value); }).concat([1]));
+    var H = top * 2 + items.length * (rowH + gap) - gap;
+    var scale = (W - pL - pR) / max;
+    var rows = items.map(function (it, i) {
+      var y = top + i * (rowH + gap);
+      var w = Math.max(3, Math.abs(it.value) * scale);
+      var color = it.color || (opts.mono ? "var(--c1)" : SERIES[i % SERIES.length]);
+      return '<text x="' + (pL - 10) + '" y="' + (y + rowH / 2 + 4) + '" text-anchor="end">' + esc(trunc(it.label, 22)) + '</text>' +
+        '<rect x="' + pL + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + rowH + '" rx="5" fill="' + color + '"/>' +
+        '<text class="vlabel" x="' + (pL + w + 9).toFixed(1) + '" y="' + (y + rowH / 2 + 4) + '">' + esc(opts.fmt ? opts.fmt(it.value) : inrShort(it.value)) + '</text>';
+    }).join("");
+    return '<svg class="chart" viewBox="0 0 ' + W + ' ' + Math.max(H, 40) + '" preserveAspectRatio="xMidYMid meet" role="img">' + rows + '</svg>';
+  }
+
+  function donut(items, opts) {
+    opts = opts || {};
+    var live = items.filter(function (i) { return i.value > 0; });
+    if (!live.length) return emptyBlock();
+    var size = 210, cx = size / 2, cy = size / 2, r = 74, sw = 26;
+    var total = sum(live, function (i) { return i.value; }) || 1;
+    var C = 2 * Math.PI * r, off = 0;
+    var arcs = live.map(function (it) {
+      var dash = (it.value / total) * C;
+      var el = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + it.color + '" stroke-width="' + sw +
+        '" stroke-dasharray="' + dash.toFixed(2) + ' ' + (C - dash).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) +
+        '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+      off += dash; return el;
+    }).join("");
+    return '<svg class="chart" viewBox="0 0 ' + size + ' ' + size + '" style="max-width:210px;margin:0 auto" preserveAspectRatio="xMidYMid meet" role="img">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface-3)" stroke-width="' + sw + '"/>' + arcs +
+      '<text x="' + cx + '" y="' + (cy - 1) + '" text-anchor="middle" class="vlabel" style="font-size:25px">' + esc(opts.center || total) + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + 18) + '" text-anchor="middle" style="font-size:11px">' + esc(opts.centerSub || "total") + '</text></svg>';
+  }
+
+  function legend(items) {
+    return '<div class="legend">' + items.map(function (i) {
+      return '<span><i style="background:' + i.color + '"></i>' + esc(i.label) + (i.value !== undefined ? ' <b>' + esc(i.value) + '</b>' : '') + '</span>';
+    }).join("") + '</div>';
+  }
+  function trunc(s, len) { s = String(s === undefined ? "" : s); return s.length > len ? s.slice(0, len - 1) + "…" : s; }
+  function emptyBlock(msg) {
+    return '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="m7 15 3-4 3 3 5-7"/></svg><span>' + esc(msg || NA) + '</span></div>';
+  }
+
+  /* =========================================================
+     UI builders
+     ========================================================= */
+  var KPI_ICONS = {
+    money: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    profit: '<path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/>',
+    cart: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L21 7H6"/>',
+    box: '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v9l9 5 9-5V8"/>',
+    avg: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    ad: '<path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1Z"/><path d="M16 9a4 4 0 0 1 0 6"/>',
+    pct: '<path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
+    rto: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
+    stock: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/>',
+    fee: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    ship: '<path d="M3 16V7h11v9"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
+    roas: '<path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 20 6"/>',
+    users: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11a3 3 0 1 0-1.8-5.4M17.5 20a6.4 6.4 0 0 0-2-4.6"/>',
+  };
+  function kpi(o) {
+    var na = o.value === NA || o.value === null || o.value === undefined;
+    return '<div class="kpi' + (na ? ' na' : '') + '">' +
+      '<div class="k-top"><span class="k-label">' + esc(o.label) + '</span>' +
+      '<span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (KPI_ICONS[o.icon] || KPI_ICONS.money) + '</svg></span></div>' +
+      '<div class="k-val ' + (o.tone || "") + (o.small ? " sm" : "") + '">' + esc(na ? NA : o.value) + '</div>' +
+      (o.sub ? '<div class="k-sub">' + o.sub + '</div>' : '') + '</div>';
+  }
+  function kpiGrid(items, cls) {
+    return '<div class="kpis ' + (cls || "kauto") + '">' + items.map(kpi).join("") + '</div>';
+  }
+  function card(title, sub, body, head) {
+    return '<div class="card"><div class="card-h"><div><h3>' + esc(title) + '</h3>' +
+      (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>' + (head || '') + '</div>' +
+      '<div class="card-b">' + body + '</div></div>';
+  }
+  function cardFlush(title, sub, body, head) {
+    return '<div class="card"><div class="card-h"><div><h3>' + esc(title) + '</h3>' +
+      (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>' + (head || '') + '</div>' + body + '</div>';
+  }
+  function tabs(key, options, current) {
+    return '<div class="tabs">' + options.map(function (o) {
+      return '<button data-tab="' + key + '" data-val="' + o + '" class="' + (o === current ? "active" : "") + '">' +
+        o.charAt(0).toUpperCase() + o.slice(1) + '</button>';
+    }).join("") + '</div>';
+  }
+  function rankList(items, fmt) {
+    if (!items.length) return emptyBlock();
+    return '<div class="rank-list">' + items.map(function (it, i) {
+      return '<div class="rank-row"><span class="rank-n">' + (i + 1) + '</span>' +
+        '<span style="min-width:0"><div class="rank-name">' + esc(trunc(it.label, 26)) + '</div>' +
+        (it.sub ? '<div class="rank-sub">' + esc(it.sub) + '</div>' : '') + '</span>' +
+        '<span class="rank-val">' + esc(fmt ? fmt(it.value) : it.value) + '</span></div>';
+    }).join("") + '</div>';
+  }
+
+  /* ---------- data table ---------- */
+  function table(cfg) {
+    var id = cfg.id;
+    if (!S.tbl[id]) S.tbl[id] = { page: 1, sortKey: cfg.defaultSort || null, dir: cfg.defaultDir || -1, q: "" };
+    var st = S.tbl[id];
+    var rows = cfg.rows.slice();
+
+    var q = (st.q || "") || (cfg.useGlobalSearch ? S.globalSearch : "");
+    if (q) {
+      var ql = q.toLowerCase();
+      var keys = cfg.searchKeys || cfg.columns.map(function (c) { return c.key; });
+      rows = rows.filter(function (r) {
+        return keys.some(function (k) { return String(r[k] === undefined ? "" : r[k]).toLowerCase().indexOf(ql) !== -1; });
+      });
+    }
+    if (st.sortKey) {
+      var col = cfg.columns.filter(function (c) { return c.key === st.sortKey; })[0] || {};
+      rows.sort(function (a, b) {
+        var av = a[st.sortKey], bv = b[st.sortKey];
+        if (col.num) return (n(av) - n(bv)) * st.dir;
+        return String(av === undefined ? "" : av).localeCompare(String(bv === undefined ? "" : bv)) * st.dir;
+      });
+    }
+    var size = cfg.pageSize || 10;
+    var pages = Math.max(1, Math.ceil(rows.length / size));
+    if (st.page > pages) st.page = pages;
+    var slice = rows.slice((st.page - 1) * size, st.page * size);
+
+    var tools = cfg.search === false ? "" :
+      '<div class="tbl-tools"><input type="search" data-tsearch="' + id + '" value="' + esc(st.q) + '" placeholder="' + esc(cfg.searchPlaceholder || "Search…") + '"></div>';
+
+    var thead = "<tr>" + cfg.columns.map(function (c) {
+      var on = st.sortKey === c.key;
+      return '<th class="' + (c.num ? "num " : "") + (on ? "sorted" : "") + '" data-sort="' + id + "" + c.key + '">' +
+        esc(c.label) + (on ? '<span class="arr">' + (st.dir === 1 ? "▲" : "▼") + '</span>' : '') + '</th>';
+    }).join("") + "</tr>";
+
+    var tbody = slice.length ? slice.map(function (r) {
+      return '<tr class="' + (cfg.onClick ? "click" : "") + '"' + (cfg.onClick ? ' data-rid="' + id + "" + r.__i + '"' : '') + '>' +
+        cfg.columns.map(function (c) {
+          var v = r[c.key];
+          var cls = (c.num ? "num " : "") + (c.strong ? "strong " : "");
+          if (c.tone) cls += c.tone(v, r) + " ";
+          return '<td class="' + cls.trim() + '">' + (c.render ? c.render(v, r) : (has(v) ? esc(v) : "—")) + '</td>';
+        }).join("") + '</tr>';
+    }).join("") : '<tr><td colspan="' + cfg.columns.length + '">' + emptyBlock(cfg.empty || "No rows match the current filters") + '</td></tr>';
+
+    var pager = rows.length > size ?
+      '<div class="pager"><span>' + rows.length + ' rows · page ' + st.page + ' of ' + pages + '</span>' +
+      '<button data-pg="' + id + 'prev"' + (st.page <= 1 ? " disabled" : "") + '>Prev</button>' +
+      '<button data-pg="' + id + 'next"' + (st.page >= pages ? " disabled" : "") + '>Next</button></div>'
+      : '<div class="pager"><span>' + rows.length + (rows.length === 1 ? ' row' : ' rows') + '</span></div>';
+
+    return tools + '<div class="tbl-wrap"><table><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table></div>' + pager;
+  }
+
+  function wireTables(root) {
+    root.querySelectorAll("[data-sort]").forEach(function (th) {
+      th.addEventListener("click", function () {
+        var p = th.getAttribute("data-sort").split(""), st = S.tbl[p[0]];
+        if (st.sortKey === p[1]) st.dir *= -1; else { st.sortKey = p[1]; st.dir = -1; }
+        render();
+      });
+    });
+    root.querySelectorAll("[data-pg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = b.getAttribute("data-pg").split("");
+        S.tbl[p[0]].page += p[1] === "next" ? 1 : -1;
+        render();
+      });
+    });
+    root.querySelectorAll("[data-tsearch]").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var id = inp.getAttribute("data-tsearch");
+        S.tbl[id].q = inp.value; S.tbl[id].page = 1;
+        render(function () {
+          var el = document.querySelector('[data-tsearch="' + id + '"]');
+          if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+        });
+      });
+    });
+    root.querySelectorAll("[data-tab]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        S.ui[b.getAttribute("data-tab")] = b.getAttribute("data-val");
+        render();
+      });
+    });
+  }
+
+  /* ---------- filters ---------- */
+  function filterBar(fields) {
+    var f = S.f;
+    var states = uniq(S.orders.map(function (o) { return o.CustomerState; })).sort();
+    var statuses = uniq(S.orders.map(function (o) { return o.OrderStatus; })).sort();
+    var payments = uniq(S.orders.map(function (o) { return o.PaymentStatus; })).sort();
+    var skus = uniq(S.orders.map(function (o) { return o.SKU; })).sort();
+    function sel(key, label, opts, allLabel) {
+      return '<div class="fld"><label>' + label + '</label><select data-f="' + key + '"><option value="all">' + allLabel + '</option>' +
+        opts.map(function (o) { return '<option value="' + esc(o) + '"' + (f[key] === o ? " selected" : "") + '>' + esc(o) + '</option>'; }).join("") + '</select></div>';
+    }
+    var map = {
+      date: '<div class="fld"><label>From</label><input type="date" data-f="from" value="' + f.from + '"></div>' +
+            '<div class="fld"><label>To</label><input type="date" data-f="to" value="' + f.to + '"></div>',
+      channel: sel("channel", "Channel", ["Amazon", "Website"], "All channels"),
+      status: sel("status", "Order status", statuses, "All statuses"),
+      state: sel("state", "State", states, "All states"),
+      product: sel("product", "Product (SKU)", skus, "All products"),
+      payment: sel("payment", "Payment", payments, "All"),
+    };
+    var cnt = activeFilterCount();
+    return '<div class="filters">' + fields.map(function (k) { return map[k] || ""; }).join("") +
+      (cnt ? '<span class="filter-count">' + cnt + ' active</span>' : '') +
+      '<button class="clear-btn" id="clearf" type="button">Clear Filters</button></div>';
+  }
+  function wireFilters(root) {
+    root.querySelectorAll("[data-f]").forEach(function (el) {
+      el.addEventListener("change", function () { S.f[el.getAttribute("data-f")] = el.value; render(); });
+    });
+    var c = root.querySelector("#clearf");
+    if (c) c.addEventListener("click", function () {
+      S.f = { from: "", to: "", channel: "all", status: "all", state: "all", product: "all", payment: "all" };
+      render();
+    });
+  }
+
+  /* =========================================================
+     aggregation helpers
+     ========================================================= */
+  function bucket(orders, gran) {
+    var m = {};
+    orders.forEach(function (o) {
+      if (!has(o.OrderDate)) return;
+      var d = String(o.OrderDate).slice(0, 10), key = d;
+      if (gran === "monthly") key = d.slice(0, 7);
+      else if (gran === "weekly") {
+        var dt = new Date(d);
+        if (!isNaN(dt.getTime())) {
+          var day = (dt.getDay() + 6) % 7;
+          var monday = new Date(dt); monday.setDate(dt.getDate() - day);
+          key = monday.toISOString().slice(0, 10);
+        }
+      }
+      if (!m[key]) m[key] = { revenue: 0, profit: 0, orders: 0, units: 0, rto: 0, adSpend: 0 };
+      m[key].revenue += o.Revenue; m[key].profit += o.NetProfit; m[key].orders += 1;
+      m[key].units += o.Qty; m[key].adSpend += o.AdSpend;
+      if (isRTO(o)) m[key].rto += 1;
+    });
+    return Object.keys(m).sort().map(function (k) {
+      return { x: k, revenue: m[k].revenue, profit: m[k].profit, orders: m[k].orders, units: m[k].units, rto: m[k].rto, adSpend: m[k].adSpend };
+    });
+  }
+  function byKey(orders, keyFn, nameFn) {
+    var m = {};
+    orders.forEach(function (o) {
+      var k = keyFn(o); if (!has(k)) return;
+      if (!m[k]) m[k] = { key: k, name: nameFn ? nameFn(o) : k, revenue: 0, profit: 0, units: 0, orders: 0, rto: 0 };
+      m[k].revenue += o.Revenue; m[k].profit += o.NetProfit; m[k].units += o.Qty; m[k].orders += 1;
+      if (isRTO(o)) m[k].rto += 1;
+    });
+    return Object.keys(m).map(function (k) { return m[k]; });
+  }
+  function statusBreakdown(orders) {
+    var m = {};
+    orders.forEach(function (o) { var k = has(o.OrderStatus) ? o.OrderStatus : "Unspecified"; m[k] = (m[k] || 0) + 1; });
+    var out = STATUS_ORDER.map(function (s, i) {
+      var found = Object.keys(m).filter(function (k) { return k.toLowerCase() === s.toLowerCase(); })[0];
+      var v = found ? m[found] : 0;
+      if (found) delete m[found];
+      // Delivered, Processing, Cancelled, Refunded, RTO, Exchange
+      return { label: s, value: v, color: [ "var(--good)", "var(--c1)", "var(--warn)", "var(--c6)", "var(--crit)", "var(--c3)" ][i] };
+    });
+    Object.keys(m).forEach(function (k, i) { out.push({ label: k, value: m[k], color: SERIES[(i + 2) % SERIES.length] }); });
+    return out;
+  }
+  function inventoryStats() {
+    var counts = { healthy: 0, low: 0, urgent: 0, out: 0 };
+    S.products.forEach(function (p) { counts[stockState(p).key]++; });
+    counts.value = sum(S.products, function (p) { return n(pick(p, ["Current Stock"])) * n(pick(p, ["Product Cost"])); });
+    counts.total = S.products.length;
+    return counts;
+  }
+  function productSales() {
+    var m = {};
+    S.orders.forEach(function (o) {
+      if (!has(o.SKU)) return;
+      if (!m[o.SKU]) m[o.SKU] = { revenue: 0, profit: 0, units: 0 };
+      m[o.SKU].revenue += o.Revenue; m[o.SKU].profit += o.NetProfit; m[o.SKU].units += o.Qty;
+    });
+    return m;
+  }
+
+  /* =========================================================
+     PAGES
+     ========================================================= */
+  var P = {};
+
+  P.dashboard = function () {
+    var o = fOrders();
+    var d = S.dash;
+    var revenue = o.length ? sum(o, function (x) { return x.Revenue; }) : n(d["Total Revenue"]);
+    var profit = o.length ? sum(o, function (x) { return x.NetProfit; }) : n(d["Net Business Profit"] || d["Total Profit"]);
+    var count = o.length || n(d["Total Orders"]);
+    var units = o.length ? sum(o, function (x) { return x.Qty; }) : n(d["Total Units Sold"]);
+    var aov = safeDiv(revenue, count);
+    // order-level ad spend is what the sheet's own Dashboard tab reports; Meta campaign
+    // spend is a separate figure and is shown alongside rather than silently added in.
+    var adSpend = sum(o, function (x) { return x.AdSpend; });
+    var metaSpend = sum(S.ads, function (a) { return n(pick(a, ["Amount Spent"])); });
+    var margin = safeDiv(profit, revenue) * 100;
+    var rtoCount = o.filter(isRTO).length;
+    var rtoRate = safeDiv(rtoCount, count) * 100;
+    var inv = inventoryStats();
+    var amz = o.filter(function (x) { return x.Channel === "Amazon"; });
+    var web = o.filter(function (x) { return x.Channel === "Website"; });
+
+    var row1 = kpiGrid([
+      { label: "Total Revenue", value: o.length || revenue ? inr(revenue) : NA, icon: "money",
+        sub: '<span>Amazon <b>' + inrShort(sum(amz, function (x) { return x.Revenue; })) + '</b></span><span>Web <b>' + inrShort(sum(web, function (x) { return x.Revenue; })) + '</b></span>' },
+      { label: "Net Profit", value: o.length || profit ? inr(profit) : NA, icon: "profit", tone: profit >= 0 ? "good" : "crit",
+        sub: '<span>Margin <b>' + (revenue ? margin.toFixed(1) + "%" : "—") + '</b></span>' },
+      { label: "Total Orders", value: count || NA, icon: "cart",
+        sub: '<span>Amazon <b>' + amz.length + '</b></span><span>Web <b>' + web.length + '</b></span>' },
+      { label: "Units Sold", value: units || NA, icon: "box",
+        sub: count ? '<span>Avg <b>' + (units / count).toFixed(1) + '</b> per order</span>' : "" },
+      { label: "Average Order Value", value: count ? inr(aov) : NA, icon: "avg" },
+    ], "k5");
+
+    var row2 = kpiGrid([
+      { label: "Ad Spend", value: o.length ? inr(adSpend) : NA, icon: "ad",
+        sub: (revenue ? '<span><b>' + (safeDiv(adSpend, revenue) * 100).toFixed(1) + '%</b> of revenue</span>' : "") +
+             (metaSpend ? '<span>Meta <b>' + inrShort(metaSpend) + '</b></span>' : "") },
+      { label: "Profit Margin", value: revenue ? margin.toFixed(1) + "%" : NA, icon: "pct", tone: margin >= 20 ? "good" : margin >= 0 ? "warn" : "crit" },
+      { label: "RTO Rate", value: count ? rtoRate.toFixed(1) + "%" : NA, icon: "rto", tone: rtoRate > 10 ? "crit" : "good",
+        sub: count ? '<span><b>' + rtoCount + '</b> of ' + count + ' orders</span>' : "" },
+      { label: "Inventory Value", value: S.products.length ? inr(inv.value) : NA, icon: "stock",
+        sub: S.products.length ? '<span><b>' + inv.total + '</b> SKUs tracked</span>' : "" },
+    ], "k4");
+
+    var gran = S.ui.dashGran || "daily";
+    var b = bucket(o, gran);
+    var trend = b.length ? lineChart([
+      { name: "Revenue", points: b.map(function (r) { return { x: r.x, y: r.revenue }; }), color: "var(--c1)" },
+      { name: "Net Profit", points: b.map(function (r) { return { x: r.x, y: r.profit }; }), color: "var(--good)" },
+    ], { area: true, height: 268, xFmt: gran === "monthly" ? null : fmtShortDate }) +
+      legend([{ label: "Revenue", color: "var(--c1)", value: inrShort(sum(b, function (r) { return r.revenue; })) },
+              { label: "Net Profit", color: "var(--good)", value: inrShort(sum(b, function (r) { return r.profit; })) }])
+      : emptyBlock("No dated orders in range");
+
+    var chanItems = [
+      { label: "Amazon", value: sum(amz, function (x) { return x.Revenue; }), color: "var(--c1)" },
+      { label: "Website", value: sum(web, function (x) { return x.Revenue; }), color: "var(--c2)" },
+    ];
+    var chan = (chanItems[0].value || chanItems[1].value)
+      ? donut(chanItems, { center: inrShort(revenue), centerSub: "revenue" }) + legend(chanItems.map(function (c) { return { label: c.label, color: c.color, value: inrShort(c.value) }; }))
+      : emptyBlock();
+
+    var st = statusBreakdown(o);
+    var statusCard = o.length
+      ? donut(st, { center: o.length, centerSub: "orders" }) + legend(st.map(function (s) { return { label: s.label, color: s.color, value: s.value }; }))
+      : emptyBlock();
+
+    var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; })
+      .sort(function (a, b2) { return b2.revenue - a.revenue; });
+    var topProducts = rankList(prods.slice(0, 7).map(function (p) {
+      return { label: p.name, sub: p.units + " units · " + inrShort(p.profit) + " profit", value: p.revenue };
+    }), inrShort);
+
+    var states = byKey(o, function (x) { return x.CustomerState; }).sort(function (a, b2) { return b2.revenue - a.revenue; });
+    var topStates = states.length ? barsH(states.slice(0, 8).map(function (s) {
+      return { label: s.key, value: s.revenue, color: "var(--c1)" };
+    }), { mono: true, fmt: inrShort, labelW: 160 }) : emptyBlock();
+
+    var invItems = [
+      { label: "Healthy", value: inv.healthy, color: "var(--good)" },
+      { label: "Low Stock", value: inv.low, color: "var(--warn)" },
+      { label: "Urgent Reorder", value: inv.urgent, color: "var(--crit)" },
+      { label: "Out of Stock", value: inv.out, color: "var(--c4)" },
+    ];
+    var invCard = S.products.length
+      ? donut(invItems, { center: inv.total, centerSub: "SKUs" }) + legend(invItems.map(function (i) { return { label: i.label, color: i.color, value: i.value }; }))
+      : emptyBlock("No products loaded");
+
+    return {
+      filters: filterBar(["date", "channel", "state", "status"]),
+      html: row1 + row2 + '<div class="grid">' +
+        '<div class="c8">' + card("Revenue Trend", "Revenue and net profit over time", trend, tabs("dashGran", ["daily", "weekly", "monthly"], gran)) + '</div>' +
+        '<div class="c4">' + card("Sales by Channel", "Revenue split", chan) + '</div>' +
+        '<div class="c4">' + card("Order Status", o.length + " orders", statusCard) + '</div>' +
+        '<div class="c4">' + card("Top Products", "By revenue", topProducts) + '</div>' +
+        '<div class="c4">' + card("Inventory Health", inv.total + " SKUs", invCard) + '</div>' +
+        '<div class="c12">' + card("Top States by Revenue", "Where orders are coming from", topStates) + '</div>' +
+        '</div>',
+    };
+  };
+
+  function channelPage(channel) {
+    return function () {
+      var o = fOrders(function (x) { return x.Channel === channel; });
+      var revenue = sum(o, function (x) { return x.Revenue; });
+      var profit = sum(o, function (x) { return x.NetProfit; });
+      var units = sum(o, function (x) { return x.Qty; });
+      var fees = sum(o, function (x) { return x.AmazonFee; });
+      var shipping = sum(o, function (x) { return x.ShippingFee; });
+      var pcost = sum(o, function (x) { return x.ProductCost; });
+      var ads = sum(o, function (x) { return x.AdSpend; });
+      var margin = safeDiv(profit, revenue) * 100;
+      var rtoC = o.filter(isRTO).length;
+      var rtoRate = safeDiv(rtoC, o.length) * 100;
+      var aov = safeDiv(revenue, o.length);
+
+      var kpiItems = [
+        { label: channel + " Revenue", value: o.length ? inr(revenue) : NA, icon: "money" },
+        { label: channel + " Orders", value: o.length || NA, icon: "cart" },
+        { label: channel + " Units", value: units || NA, icon: "box" },
+      ];
+      if (channel === "Amazon") kpiItems.push({ label: "Amazon Fees", value: o.length ? inr(fees) : NA, icon: "fee",
+        sub: revenue ? '<span><b>' + safeDiv(fees, revenue * 1 / 100).toFixed(2) + '%</b> of revenue</span>' : "" });
+      else kpiItems.push({ label: "Average Order Value", value: o.length ? inr(aov) : NA, icon: "avg" });
+      kpiItems.push({ label: channel === "Amazon" ? "Amazon Shipping" : "Shipping", value: o.length ? inr(shipping) : NA, icon: "ship" });
+      kpiItems.push({ label: "Product Cost", value: o.length ? inr(pcost) : NA, icon: "box" });
+      kpiItems.push({ label: "Ad Spend", value: o.length ? inr(ads) : NA, icon: "ad" });
+      kpiItems.push({ label: "Net Profit", value: o.length ? inr(profit) : NA, icon: "profit", tone: profit >= 0 ? "good" : "crit" });
+      kpiItems.push({ label: "Profit Margin", value: o.length ? margin.toFixed(1) + "%" : NA, icon: "pct", tone: margin >= 20 ? "good" : margin >= 0 ? "warn" : "crit" });
+      kpiItems.push({ label: "RTO Rate", value: o.length ? rtoRate.toFixed(1) + "%" : NA, icon: "rto", tone: rtoRate > 10 ? "crit" : "good",
+        sub: o.length ? '<span><b>' + rtoC + '</b> RTO orders</span>' : "" });
+
+      var granKey = channel + "Gran", gran = S.ui[granKey] || "daily";
+      var b = bucket(o, gran);
+      var xFmt = gran === "monthly" ? null : fmtShortDate;
+
+      var revTrend = b.length ? lineChart([{ name: "Revenue", points: b.map(function (r) { return { x: r.x, y: r.revenue }; }), color: "var(--c1)" }], { area: true, xFmt: xFmt }) : emptyBlock();
+      var proTrend = b.length ? lineChart([{ name: "Profit", points: b.map(function (r) { return { x: r.x, y: r.profit }; }), color: "var(--good)" }], { area: true, xFmt: xFmt }) : emptyBlock();
+      var ordTrend = b.length ? lineChart([{ name: "Orders", points: b.map(function (r) { return { x: r.x, y: r.orders }; }), color: "var(--c3)" }], { integer: true, yFmt: intFmt, xFmt: xFmt }) : emptyBlock();
+      var rvp = b.length ? lineChart([
+        { name: "Revenue", points: b.map(function (r) { return { x: r.x, y: r.revenue }; }), color: "var(--c1)" },
+        { name: "Profit", points: b.map(function (r) { return { x: r.x, y: r.profit }; }), color: "var(--good)" },
+      ], { xFmt: xFmt }) + legend([{ label: "Revenue", color: "var(--c1)" }, { label: "Net Profit", color: "var(--good)" }]) : emptyBlock();
+
+      var st = statusBreakdown(o);
+      var statusCard = o.length ? donut(st, { center: o.length, centerSub: "orders" }) + legend(st.map(function (s) { return { label: s.label, color: s.color, value: s.value }; })) : emptyBlock();
+
+      var states = byKey(o, function (x) { return x.CustomerState; }).sort(function (a, c) { return c.revenue - a.revenue; });
+      var stateChart = states.length ? barsH(states.slice(0, 10).map(function (s) { return { label: s.key, value: s.revenue, color: "var(--c1)" }; }), { mono: true, fmt: inrShort, labelW: 160 }) : emptyBlock();
+
+      var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; }).sort(function (a, c) { return c.revenue - a.revenue; });
+      var prodChart = prods.length ? columnChart(prods.slice(0, 10).map(function (p) { return { label: p.name, value: p.revenue, color: "var(--c1)" }; }), { fmt: inrShort }) : emptyBlock();
+
+      var rtoTrend = b.length ? lineChart([{ name: "RTO", points: b.map(function (r) { return { x: r.x, y: r.rto }; }), color: "var(--crit)" }], { integer: true, yFmt: intFmt, xFmt: xFmt }) : emptyBlock();
+
+      o.forEach(function (x, i) { x.__i = i; });
+      var tbl = table({
+        id: channel + "-orders",
+        rows: o, pageSize: 10, defaultSort: "OrderDate",
+        searchPlaceholder: "Search " + channel + " orders…",
+        useGlobalSearch: true,
+        searchKeys: ["OrderID", "SKU", "ProductName", "CustomerState", "OrderStatus"],
+        onClick: openOrder,
+        columns: [
+          { key: "OrderDate", label: "Date", render: fmtDate },
+          { key: "OrderID", label: "Order ID", strong: true },
+          { key: "SKU", label: "SKU" },
+          { key: "ProductName", label: "Product" },
+          { key: "Qty", label: "Qty", num: true },
+          { key: "Revenue", label: "Revenue", num: true, render: function (v) { return inr(v, "—"); } },
+          { key: "ProductCost", label: "Cost", num: true, render: function (v) { return inr(v, "—"); } },
+          { key: "NetProfit", label: "Net Profit", num: true, render: function (v) { return inr(v, "—"); }, tone: function (v) { return n(v) >= 0 ? "pos" : "neg"; } },
+          { key: "ProfitPct", label: "Profit %", num: true, render: function (v) { return has(v) ? esc(v) : "—"; } },
+          { key: "OrderStatus", label: "Status", render: function (v) { return has(v) ? '<span class="chip ' + statusTone(v) + '">' + esc(v) + '</span>' : "—"; } },
+          { key: "CustomerState", label: "State" },
+        ],
+      });
+
+      var extra = "";
+      if (channel === "Amazon") {
+        var feeRows = [
+          { label: "Amazon Fees", value: fees, color: "var(--c1)" },
+          { label: "Shipping", value: shipping, color: "var(--c2)" },
+          { label: "Packaging", value: sum(o, function (x) { return x.Packaging; }), color: "var(--c3)" },
+          { label: "RTO Charges", value: sum(o, function (x) { return x.RTOCharges; }), color: "var(--crit)" },
+          { label: "Ad Spend", value: ads, color: "var(--c6)" },
+        ];
+        extra = '<div class="c12">' + card("Amazon Fees & Cost Analysis", "What Amazon takes out of every order",
+          o.length ? barsH(feeRows, { fmt: inr, labelW: 150 }) : emptyBlock()) + '</div>';
+      }
+
+      return {
+        filters: filterBar(["date", "status", "state", "product"]),
+        html: kpiGrid(kpiItems, "kauto") + '<div class="grid">' +
+          '<div class="c8">' + card(channel + " Revenue Trend", null, revTrend, tabs(granKey, ["daily", "weekly", "monthly"], gran)) + '</div>' +
+          '<div class="c4">' + card("Order Status", null, statusCard) + '</div>' +
+          '<div class="c6">' + card(channel + " Profit Trend", null, proTrend) + '</div>' +
+          '<div class="c6">' + card(channel + " Orders Trend", null, ordTrend) + '</div>' +
+          '<div class="c7">' + card("Revenue vs Profit", null, rvp) + '</div>' +
+          '<div class="c5">' + card("RTO Trend", rtoC + " RTO orders", rtoTrend) + '</div>' +
+          '<div class="c6">' + card("Top Products", "By revenue", prodChart) + '</div>' +
+          '<div class="c6">' + card("State-wise Revenue", null, stateChart) + '</div>' +
+          extra +
+          '<div class="c12">' + cardFlush(channel + " Orders", "Click any row for full order detail", tbl) + '</div>' +
+          '</div>',
+      };
+    };
+  }
+  P.amazon = channelPage("Amazon");
+  P.website = channelPage("Website");
+
+  P.metaads = function () {
+    var ads = S.ads.map(function (a, i) { return Object.assign({ __i: i }, a); });
+    if (!ads.length) {
+      return { filters: "", html: card("Meta Ads", "Live from the Meta ads tab",
+        emptyBlock("No campaign data available in the sheet")) };
+    }
+    var spend = sum(ads, function (a) { return n(pick(a, ["Amount Spent"])); });
+    var revenue = sum(ads, function (a) { return n(pick(a, ["Revenue"])); });
+    var purchases = sum(ads, function (a) { return n(pick(a, ["Purchases"])); });
+    var profitAfter = sum(ads, function (a) { return n(pick(a, ["Profit After Ads"])); });
+    var impressions = sum(ads, function (a) { return n(pick(a, ["Impressions"])); });
+    var clicks = sum(ads, function (a) { return n(pick(a, ["Clicks"])); });
+    var roas = safeDiv(revenue, spend);
+    var cpo = safeDiv(spend, purchases);
+
+    var k = kpiGrid([
+      { label: "Total Ad Spend", value: inr(spend), icon: "ad" },
+      { label: "Revenue from Ads", value: inr(revenue), icon: "money" },
+      { label: "ROAS", value: spend ? roas.toFixed(2) + "x" : NA, icon: "roas", tone: roas >= 3 ? "good" : roas >= 1 ? "warn" : "crit" },
+      { label: "Orders", value: purchases || NA, icon: "cart",
+        sub: impressions ? '<span>CTR <b>' + safeDiv(clicks, impressions / 100).toFixed(2) + '%</b></span>' : "" },
+      { label: "Cost Per Order", value: purchases ? inr(cpo) : NA, icon: "avg" },
+      { label: "Profit After Ads", value: inr(profitAfter), icon: "profit", tone: profitAfter >= 0 ? "good" : "crit" },
+    ], "kauto");
+
+    var m = {};
+    ads.forEach(function (a) {
+      var d = String(pick(a, ["Date"]) || "").slice(0, 10) || "—";
+      if (!m[d]) m[d] = { spend: 0, revenue: 0, purchases: 0 };
+      m[d].spend += n(pick(a, ["Amount Spent"]));
+      m[d].revenue += n(pick(a, ["Revenue"]));
+      m[d].purchases += n(pick(a, ["Purchases"]));
+    });
+    var days = Object.keys(m).sort();
+    var pts = function (f) { return days.map(function (d) { return { x: d, y: f(m[d]) }; }); };
+
+    var spendTrend = lineChart([{ name: "Spend", points: pts(function (v) { return v.spend; }), color: "var(--c6)" }], { area: true, xFmt: fmtShortDate });
+    var revTrend = lineChart([{ name: "Revenue", points: pts(function (v) { return v.revenue; }), color: "var(--c1)" }], { area: true, xFmt: fmtShortDate });
+    var roasTrend = lineChart([{ name: "ROAS", points: pts(function (v) { return safeDiv(v.revenue, v.spend); }), color: "var(--good)" }], { yFmt: function (v) { return v.toFixed(1) + "x"; }, xFmt: fmtShortDate });
+    var purTrend = lineChart([{ name: "Purchases", points: pts(function (v) { return v.purchases; }), color: "var(--c3)" }], { integer: true, yFmt: intFmt, xFmt: fmtShortDate });
+
+    var tbl = table({
+      id: "ads-tbl", rows: ads, pageSize: 10, defaultSort: "Date",
+      useGlobalSearch: true, searchKeys: ["Campaign", "Ad Set", "Date"], searchPlaceholder: "Search campaigns…",
+      columns: [
+        { key: "Campaign", label: "Campaign", strong: true },
+        { key: "Ad Set", label: "Ad Set" },
+        { key: "Date", label: "Date", render: fmtDate },
+        { key: "Amount Spent", label: "Spent", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "Impressions", label: "Impressions", num: true, render: function (v) { return has(v) ? n(v).toLocaleString("en-IN") : "—"; } },
+        { key: "CTR %", label: "CTR", num: true },
+        { key: "Purchases", label: "Purchases", num: true },
+        { key: "ROAS", label: "ROAS", num: true, render: function (v) { return has(v) ? n(v).toFixed(2) + "x" : "—"; } },
+        { key: "Revenue", label: "Revenue", num: true, render: function (v) { return has(v) ? esc(v) : "—"; } },
+      ],
+    });
+
+    return {
+      filters: "",
+      html: k + '<div class="grid">' +
+        '<div class="c6">' + card("Ad Spend Trend", null, spendTrend) + '</div>' +
+        '<div class="c6">' + card("Revenue from Ads", null, revTrend) + '</div>' +
+        '<div class="c6">' + card("ROAS Trend", "Return on ad spend", roasTrend) + '</div>' +
+        '<div class="c6">' + card("Purchases Trend", null, purTrend) + '</div>' +
+        '<div class="c12">' + cardFlush("Campaign Performance", ads.length + " campaign rows from the Meta ads tab", tbl) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.orders = function () {
+    var o = fOrders();
+    o.forEach(function (x, i) { x.__i = i; });
+    var revenue = sum(o, function (x) { return x.Revenue; });
+    var profit = sum(o, function (x) { return x.NetProfit; });
+    var k = kpiGrid([
+      { label: "Orders in View", value: o.length || NA, icon: "cart" },
+      { label: "Revenue", value: o.length ? inr(revenue) : NA, icon: "money" },
+      { label: "Net Profit", value: o.length ? inr(profit) : NA, icon: "profit", tone: profit >= 0 ? "good" : "crit" },
+      { label: "Units", value: sum(o, function (x) { return x.Qty; }) || NA, icon: "box" },
+      { label: "Avg Order Value", value: o.length ? inr(safeDiv(revenue, o.length)) : NA, icon: "avg" },
+    ], "k5");
+
+    var tbl = table({
+      id: "orders-all", rows: o, pageSize: 15, defaultSort: "OrderDate",
+      useGlobalSearch: true, searchPlaceholder: "Search order ID, SKU, product, state, courier…",
+      searchKeys: ["OrderID", "SKU", "ProductName", "CustomerState", "Courier", "OrderStatus", "PaymentStatus"],
+      onClick: openOrder,
+      columns: [
+        { key: "Channel", label: "Channel", render: function (v) { return '<span class="chip ' + (v === "Amazon" ? "blue" : "info") + '">' + esc(v) + '</span>'; } },
+        { key: "OrderDate", label: "Order Date", render: fmtDate },
+        { key: "OrderID", label: "Order ID", strong: true },
+        { key: "SKU", label: "SKU" },
+        { key: "ProductName", label: "Product Name" },
+        { key: "Qty", label: "Qty", num: true },
+        { key: "Revenue", label: "Revenue", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "ProductCost", label: "Product Cost", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "AmazonFee", label: "Amazon Fee", num: true, render: function (v, r) { return r.Channel === "Amazon" ? inr(v, "—") : '<span style="color:var(--muted)">n/a</span>'; } },
+        { key: "ShippingFee", label: "Shipping", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "AdSpend", label: "Ad Spend", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "NetProfit", label: "Net Profit", num: true, render: function (v) { return inr(v, "—"); }, tone: function (v) { return n(v) >= 0 ? "pos" : "neg"; } },
+        { key: "ProfitPct", label: "Profit %", num: true, render: function (v) { return has(v) ? esc(v) : "—"; } },
+        { key: "OrderStatus", label: "Order Status", render: function (v) { return has(v) ? '<span class="chip ' + statusTone(v) + '">' + esc(v) + '</span>' : "—"; } },
+        { key: "CustomerState", label: "Customer State" },
+        { key: "PaymentStatus", label: "Payment", render: function (v) { return has(v) ? '<span class="chip ' + (/paid/i.test(v) ? "good" : "warn") + '">' + esc(v) + '</span>' : "—"; } },
+        { key: "Courier", label: "Courier Partner" },
+      ],
+    });
+
+    return {
+      filters: filterBar(["date", "channel", "status", "payment", "state", "product"]),
+      html: k + '<div class="grid"><div class="c12">' +
+        cardFlush("All Orders", "Amazon + Website · click a row for full detail", tbl) + '</div></div>',
+    };
+  };
+
+  P.products = function () {
+    var sales = productSales();
+    var rows = S.products.map(function (p, i) {
+      var sku = pick(p, ["SKU"]);
+      var s = sales[sku] || { revenue: 0, profit: 0, units: 0 };
+      var stock = stockState(p);
+      return Object.assign({}, p, {
+        __i: i, __sku: sku, __name: pick(p, ["Product Name"]),
+        __revenue: s.revenue, __profit: s.profit, __soldOrders: s.units,
+        __margin: n(pick(p, ["Margin"])) * (n(pick(p, ["Margin"])) <= 1 ? 100 : 1),
+        __stockLabel: stock.label, __stockTone: stock.tone,
+      });
+    });
+
+    var totalRevenue = sum(rows, function (r) { return r.__revenue; });
+    var totalUnits = sum(rows, function (r) { return n(pick(r, ["Sold Qty"])); });
+    var totalCost = sum(rows, function (r) { return n(pick(r, ["Product Cost"])) * n(pick(r, ["Sold Qty"])); });
+    var margins = rows.map(function (r) { return r.__margin; }).filter(function (m) { return m > 0; });
+    var avgMargin = margins.length ? sum(margins, function (m) { return m; }) / margins.length : 0;
+
+    var k = kpiGrid([
+      { label: "Total Products", value: rows.length || NA, icon: "box" },
+      { label: "Units Sold", value: totalUnits || NA, icon: "cart" },
+      { label: "Revenue", value: rows.length ? inr(totalRevenue) : NA, icon: "money" },
+      { label: "Product Cost", value: rows.length ? inr(totalCost) : NA, icon: "fee" },
+      { label: "Gross Profit", value: rows.length ? inr(totalRevenue - totalCost) : NA, icon: "profit", tone: (totalRevenue - totalCost) >= 0 ? "good" : "crit" },
+      { label: "Average Margin", value: margins.length ? avgMargin.toFixed(1) + "%" : NA, icon: "pct" },
+    ], "kauto");
+
+    var byRev = rows.slice().sort(function (a, b) { return b.__revenue - a.__revenue; }).slice(0, 8);
+    var byProfit = rows.slice().sort(function (a, b) { return b.__profit - a.__profit; }).slice(0, 8);
+    var byUnits = rows.slice().sort(function (a, b) { return n(pick(b, ["Sold Qty"])) - n(pick(a, ["Sold Qty"])); }).slice(0, 8);
+
+    var tbl = table({
+      id: "products-tbl", rows: rows, pageSize: 12, defaultSort: "__revenue",
+      useGlobalSearch: true, searchKeys: ["SKU", "Product Name", "Category"], searchPlaceholder: "Search SKU, product, category…",
+      columns: [
+        { key: "SKU", label: "SKU", strong: true },
+        { key: "Product Name", label: "Product Name" },
+        { key: "Category", label: "Category" },
+        { key: "Selling Price", label: "Selling Price", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "Product Cost", label: "Product Cost", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "__margin", label: "Margin", num: true, render: function (v) { return v ? v.toFixed(1) + "%" : "—"; } },
+        { key: "Opening Stock", label: "Opening Stock", num: true },
+        { key: "Sold Qty", label: "Sold Qty", num: true },
+        { key: "Current Stock", label: "Current Stock", num: true },
+        { key: "Reorder Alert", label: "Reorder Alert", render: function (v, r) { return '<span class="chip ' + r.__stockTone + '">' + esc(has(v) ? v : r.__stockLabel) + '</span>'; } },
+      ],
+    });
+
+    return {
+      filters: "",
+      html: k + '<div class="grid">' +
+        '<div class="c6">' + card("Top Products by Revenue", "From live order data", byRev.length && totalRevenue ? columnChart(byRev.map(function (r) { return { label: r.__name || r.__sku, value: r.__revenue, color: "var(--c1)" }; }), { fmt: inrShort }) : emptyBlock("No order revenue recorded yet")) + '</div>' +
+        '<div class="c6">' + card("Top Products by Profit", null, byProfit.length && sum(byProfit, function (r) { return r.__profit; }) ? columnChart(byProfit.map(function (r) { return { label: r.__name || r.__sku, value: r.__profit, color: "var(--good)" }; }), { fmt: inrShort }) : emptyBlock("No profit recorded yet")) + '</div>' +
+        '<div class="c12">' + card("Top Products by Units Sold", "From the Products tab", byUnits.length ? barsH(byUnits.map(function (r) { return { label: r.__name || r.__sku, value: n(pick(r, ["Sold Qty"])), color: "var(--c2)" }; }), { mono: false, fmt: function (v) { return Math.round(v) + " units"; }, labelW: 170 }) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + cardFlush("Product Catalog", rows.length + " SKUs from the Products tab", tbl) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.customers = function () {
+    var o = fOrders();
+    var states = byKey(o, function (x) { return x.CustomerState; }).sort(function (a, b) { return b.revenue - a.revenue; });
+    states.forEach(function (s, i) { s.__i = i; s.aov = safeDiv(s.revenue, s.orders); s.rtoRate = safeDiv(s.rto, s.orders) * 100; });
+    var k = kpiGrid([
+      { label: "States Ordering", value: states.length || NA, icon: "users" },
+      { label: "Total Orders", value: o.length || NA, icon: "cart" },
+      { label: "Revenue", value: o.length ? inr(sum(o, function (x) { return x.Revenue; })) : NA, icon: "money" },
+      { label: "Avg Order Value", value: o.length ? inr(safeDiv(sum(o, function (x) { return x.Revenue; }), o.length)) : NA, icon: "avg" },
+    ], "k4");
+    var tbl = table({
+      id: "cust-tbl", rows: states, pageSize: 12, defaultSort: "revenue",
+      useGlobalSearch: true, searchKeys: ["key"], searchPlaceholder: "Search state…",
+      columns: [
+        { key: "key", label: "Customer State", strong: true },
+        { key: "orders", label: "Orders", num: true },
+        { key: "units", label: "Units", num: true },
+        { key: "revenue", label: "Revenue", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "profit", label: "Net Profit", num: true, render: function (v) { return inr(v, "—"); }, tone: function (v) { return n(v) >= 0 ? "pos" : "neg"; } },
+        { key: "aov", label: "AOV", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "rtoRate", label: "RTO %", num: true, render: function (v) { return v.toFixed(1) + "%"; } },
+      ],
+    });
+    return {
+      filters: filterBar(["date", "channel", "status"]),
+      html: k + '<div class="grid"><div class="c12">' +
+        cardFlush("Customers by State", "The sheet records customer state but no customer name or contact fields, so this is a state-level view", tbl) +
+        '</div></div>',
+    };
+  };
+
+  function inventoryPage(mode) {
+    return function () {
+      var inv = inventoryStats();
+      var sales = productSales();
+      var all = S.products.map(function (p, i) {
+        var st = stockState(p);
+        var sku = pick(p, ["SKU"]);
+        return Object.assign({}, p, { __i: i, __state: st.key, __label: st.label, __tone: st.tone,
+          __sold: n(pick(p, ["Sold Qty"])), __stock: n(pick(p, ["Current Stock"])),
+          __value: n(pick(p, ["Current Stock"])) * n(pick(p, ["Product Cost"])),
+          __revenue: (sales[sku] || { revenue: 0 }).revenue });
+      });
+      var rows = mode === "all" ? all : all.filter(function (p) {
+        if (mode === "low") return p.__state === "low" || p.__state === "urgent";
+        return p.__state === "out";
+      });
+
+      var k = kpiGrid([
+        { label: "Total SKUs", value: inv.total || NA, icon: "box" },
+        { label: "Healthy", value: inv.total ? inv.healthy : NA, icon: "stock", tone: "good" },
+        { label: "Low Stock", value: inv.total ? inv.low : NA, icon: "rto", tone: inv.low ? "warn" : "" },
+        { label: "Urgent Reorder", value: inv.total ? inv.urgent : NA, icon: "rto", tone: inv.urgent ? "crit" : "" },
+        { label: "Out of Stock", value: inv.total ? inv.out : NA, icon: "rto", tone: inv.out ? "crit" : "" },
+        { label: "Inventory Value", value: inv.total ? inr(inv.value) : NA, icon: "money" },
+      ], "kauto");
+
+      var cat = {};
+      all.forEach(function (p) { var c = pick(p, ["Category"]) || "Uncategorized"; cat[c] = (cat[c] || 0) + p.__stock; });
+      var catItems = Object.keys(cat).map(function (c, i) { return { label: c, value: cat[c], color: SERIES[i % SERIES.length] }; });
+      var catChart = catItems.length ? columnChart(catItems, { integer: true, fmt: function (v) { return Math.round(v) + " pcs"; }, yFmt: intFmt }) : emptyBlock();
+
+      var fast = all.slice().sort(function (a, b) { return b.__sold - a.__sold; }).slice(0, 6);
+      var slow = all.slice().sort(function (a, b) { return a.__sold - b.__sold; }).slice(0, 6);
+      var fastChart = fast.length ? barsH(fast.map(function (p) { return { label: pick(p, ["Product Name"]) || pick(p, ["SKU"]), value: p.__sold, color: "var(--good)" }; }), { fmt: function (v) { return Math.round(v) + " sold"; }, labelW: 165 }) : emptyBlock();
+      var slowChart = slow.length ? barsH(slow.map(function (p) { return { label: pick(p, ["Product Name"]) || pick(p, ["SKU"]), value: Math.max(p.__sold, 0.0001), color: "var(--warn)" }; }), { fmt: function (v) { return Math.round(v) + " sold"; }, labelW: 165 }) : emptyBlock();
+
+      var titles = { all: "Inventory Detail", low: "Low & Urgent Stock", out: "Out of Stock Products" };
+      var tbl = table({
+        id: "inv-" + mode, rows: rows, pageSize: 12, defaultSort: "__stock", defaultDir: 1,
+        useGlobalSearch: true, searchKeys: ["SKU", "Product Name", "Category"], searchPlaceholder: "Search SKU or product…",
+        empty: mode === "out" ? "Nothing is out of stock right now" : mode === "low" ? "No products are low on stock" : "No products loaded",
+        columns: [
+          { key: "SKU", label: "SKU", strong: true },
+          { key: "Product Name", label: "Product" },
+          { key: "Category", label: "Category" },
+          { key: "Opening Stock", label: "Opening Stock", num: true },
+          { key: "Sold Qty", label: "Sold Qty", num: true },
+          { key: "Current Stock", label: "Current Stock", num: true },
+          { key: "Reorder Alert", label: "Reorder Alert", render: function (v) { return has(v) ? esc(v) : "—"; } },
+          { key: "__label", label: "Stock Status", render: function (v, r) { return '<span class="chip ' + r.__tone + '">' + esc(v) + '</span>'; } },
+          { key: "__value", label: "Stock Value", num: true, render: function (v) { return inr(v, "—"); } },
+        ],
+      });
+
+      var charts = mode === "all" ? '<div class="grid">' +
+        '<div class="c6">' + card("Stock by Category", "Units currently on hand", catChart) + '</div>' +
+        '<div class="c6">' + card("Fast Moving Products", "Highest sold quantity", fastChart) + '</div>' +
+        '<div class="c12">' + card("Slow Moving Products", "Lowest sold quantity — candidates for promotion", slowChart) + '</div>' +
+        '</div>' : "";
+
+      return {
+        filters: "",
+        html: k + charts + '<div class="grid" style="margin-top:14px"><div class="c12">' +
+          cardFlush(titles[mode], rows.length + " SKUs", tbl) + '</div></div>',
+      };
+    };
+  }
+  P.inventory = inventoryPage("all");
+  P.lowstock = inventoryPage("low");
+  P.outofstock = inventoryPage("out");
+
+  P.salesanalytics = function () {
+    var o = fOrders();
+    var daily = bucket(o, "daily"), weekly = bucket(o, "weekly"), monthly = bucket(o, "monthly");
+    var amz = o.filter(function (x) { return x.Channel === "Amazon"; });
+    var web = o.filter(function (x) { return x.Channel === "Website"; });
+    var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; }).sort(function (a, b) { return b.revenue - a.revenue; });
+    var states = byKey(o, function (x) { return x.CustomerState; }).sort(function (a, b) { return b.revenue - a.revenue; });
+
+    var revenue = sum(o, function (x) { return x.Revenue; });
+    var k = kpiGrid([
+      { label: "Revenue", value: o.length ? inr(revenue) : NA, icon: "money" },
+      { label: "Orders", value: o.length || NA, icon: "cart" },
+      { label: "Units", value: sum(o, function (x) { return x.Qty; }) || NA, icon: "box" },
+      { label: "Avg Order Value", value: o.length ? inr(safeDiv(revenue, o.length)) : NA, icon: "avg" },
+      { label: "Active Days", value: daily.length || NA, icon: "pct" },
+    ], "k5");
+
+    return {
+      filters: filterBar(["date", "channel", "state", "product"]),
+      html: k + '<div class="grid">' +
+        '<div class="c12">' + card("Daily Revenue", null, daily.length ? lineChart([{ name: "Revenue", points: daily.map(function (r) { return { x: r.x, y: r.revenue }; }), color: "var(--c1)" }], { area: true, height: 250, xFmt: fmtShortDate }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Weekly Revenue", "Week starting", weekly.length ? columnChart(weekly.map(function (r) { return { label: fmtShortDate(r.x), value: r.revenue, color: "var(--c1)" }; }), { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Monthly Revenue", null, monthly.length ? columnChart(monthly.map(function (r) { return { label: r.x, value: r.revenue, color: "var(--c4)" }; }), { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Revenue by Channel", null, o.length ? columnChart([
+          { label: "Amazon", value: sum(amz, function (x) { return x.Revenue; }), color: "var(--c1)" },
+          { label: "Website", value: sum(web, function (x) { return x.Revenue; }), color: "var(--c2)" },
+        ], { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Orders by Channel", null, o.length ? donut([
+          { label: "Amazon", value: amz.length, color: "var(--c1)" }, { label: "Website", value: web.length, color: "var(--c2)" },
+        ], { center: o.length, centerSub: "orders" }) + legend([{ label: "Amazon", color: "var(--c1)", value: amz.length }, { label: "Website", color: "var(--c2)", value: web.length }]) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Revenue by Product", null, prods.length ? barsH(prods.slice(0, 8).map(function (p) { return { label: p.name, value: p.revenue, color: "var(--c1)" }; }), { mono: true, fmt: inrShort, labelW: 165 }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Revenue by State", null, states.length ? barsH(states.slice(0, 8).map(function (s) { return { label: s.key, value: s.revenue, color: "var(--c3)" }; }), { mono: true, fmt: inrShort, labelW: 165 }) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + card("Units by Product", null, prods.length ? columnChart(prods.slice(0, 10).map(function (p) { return { label: p.name, value: p.units, color: "var(--c2)" }; }), { integer: true, fmt: intFmt, yFmt: intFmt }) : emptyBlock()) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.profitanalytics = function () {
+    var o = fOrders();
+    var revenue = sum(o, function (x) { return x.Revenue; });
+    var pcost = sum(o, function (x) { return x.ProductCost; });
+    var fees = sum(o, function (x) { return x.AmazonFee; });
+    var ship = sum(o, function (x) { return x.ShippingFee; });
+    var ad = sum(o, function (x) { return x.AdSpend; });
+    var rto = sum(o, function (x) { return x.RTOCharges; });
+    var pack = sum(o, function (x) { return x.Packaging; });
+    var profit = sum(o, function (x) { return x.NetProfit; });
+    var margin = safeDiv(profit, revenue) * 100;
+
+    var k = kpiGrid([
+      { label: "Revenue", value: o.length ? inr(revenue) : NA, icon: "money" },
+      { label: "Product Cost", value: o.length ? inr(pcost) : NA, icon: "box" },
+      { label: "Amazon Fees", value: o.length ? inr(fees) : NA, icon: "fee" },
+      { label: "Shipping", value: o.length ? inr(ship) : NA, icon: "ship" },
+      { label: "Ad Spend", value: o.length ? inr(ad) : NA, icon: "ad" },
+      { label: "RTO Charges", value: o.length ? inr(rto) : NA, icon: "rto" },
+      { label: "Net Profit", value: o.length ? inr(profit) : NA, icon: "profit", tone: profit >= 0 ? "good" : "crit" },
+      { label: "Profit Margin", value: o.length ? margin.toFixed(1) + "%" : NA, icon: "pct", tone: margin >= 20 ? "good" : margin >= 0 ? "warn" : "crit" },
+    ], "kauto");
+
+    var waterfall = [
+      { label: "Revenue", value: revenue, color: "var(--c1)" },
+      { label: "Product Cost", value: pcost, color: "var(--crit)" },
+      { label: "Amazon Fees", value: fees, color: "var(--warn)" },
+      { label: "Shipping", value: ship, color: "var(--c3)" },
+      { label: "Packaging", value: pack, color: "var(--c5)" },
+      { label: "Ad Spend", value: ad, color: "var(--c6)" },
+      { label: "RTO Charges", value: rto, color: "var(--crit)" },
+      { label: "Net Profit", value: profit, color: "var(--good)" },
+    ];
+
+    var b = bucket(o, "daily");
+    var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; }).sort(function (a, c) { return c.profit - a.profit; });
+    var states = byKey(o, function (x) { return x.CustomerState; }).sort(function (a, c) { return c.profit - a.profit; });
+    var amz = o.filter(function (x) { return x.Channel === "Amazon"; });
+    var web = o.filter(function (x) { return x.Channel === "Website"; });
+
+    return {
+      filters: filterBar(["date", "channel", "state", "product"]),
+      html: k + '<div class="grid">' +
+        '<div class="c12">' + card("Where the Money Goes", "Revenue broken down into costs and what is left", o.length ? barsH(waterfall, { fmt: inr, labelW: 150 }) : emptyBlock()) + '</div>' +
+        '<div class="c8">' + card("Profit Trend", "Net profit by day", b.length ? lineChart([{ name: "Profit", points: b.map(function (r) { return { x: r.x, y: r.profit }; }), color: "var(--good)" }], { area: true, xFmt: fmtShortDate }) : emptyBlock()) + '</div>' +
+        '<div class="c4">' + card("Profit by Channel", null, o.length ? columnChart([
+          { label: "Amazon", value: sum(amz, function (x) { return x.NetProfit; }), color: "var(--c1)" },
+          { label: "Website", value: sum(web, function (x) { return x.NetProfit; }), color: "var(--good)" },
+        ], { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Most Profitable Products", null, prods.length ? rankList(prods.slice(0, 7).map(function (p) { return { label: p.name, sub: p.units + " units · " + inrShort(p.revenue) + " revenue", value: p.profit }; }), inr) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Least Profitable Products", "Watch these margins", prods.length ? rankList(prods.slice().reverse().slice(0, 7).map(function (p) { return { label: p.name, sub: p.units + " units · " + inrShort(p.revenue) + " revenue", value: p.profit }; }), inr) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + card("Profit by State", null, states.length ? barsH(states.slice(0, 10).map(function (s) { return { label: s.key, value: s.profit, color: s.profit >= 0 ? "var(--good)" : "var(--crit)" }; }), { fmt: inr, labelW: 160 }) : emptyBlock()) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.productanalytics = function () {
+    var o = fOrders();
+    var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; });
+    prods.forEach(function (p, i) {
+      p.__i = i;
+      p.aov = safeDiv(p.revenue, p.orders);
+      p.margin = safeDiv(p.profit, p.revenue) * 100;
+      var match = S.products.filter(function (x) { return pick(x, ["SKU"]) === p.key; })[0];
+      p.category = match ? pick(match, ["Category"]) : "";
+      p.stock = match ? n(pick(match, ["Current Stock"])) : 0;
+    });
+    prods.sort(function (a, b) { return b.revenue - a.revenue; });
+
+    var k = kpiGrid([
+      { label: "Products Sold", value: prods.length || NA, icon: "box" },
+      { label: "Revenue", value: o.length ? inr(sum(prods, function (p) { return p.revenue; })) : NA, icon: "money" },
+      { label: "Profit", value: o.length ? inr(sum(prods, function (p) { return p.profit; })) : NA, icon: "profit" },
+      { label: "Units", value: sum(prods, function (p) { return p.units; }) || NA, icon: "cart" },
+      { label: "Best Seller", value: prods.length ? trunc(prods[0].name, 18) : NA, icon: "avg", small: true },
+    ], "k5");
+
+    var tbl = table({
+      id: "prod-analytics", rows: prods, pageSize: 12, defaultSort: "revenue",
+      useGlobalSearch: true, searchKeys: ["key", "name", "category"], searchPlaceholder: "Search product…",
+      columns: [
+        { key: "key", label: "SKU", strong: true },
+        { key: "name", label: "Product" },
+        { key: "category", label: "Category" },
+        { key: "orders", label: "Orders", num: true },
+        { key: "units", label: "Units", num: true },
+        { key: "revenue", label: "Revenue", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "profit", label: "Profit", num: true, render: function (v) { return inr(v, "—"); }, tone: function (v) { return n(v) >= 0 ? "pos" : "neg"; } },
+        { key: "margin", label: "Margin %", num: true, render: function (v) { return v.toFixed(1) + "%"; } },
+        { key: "aov", label: "AOV", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "stock", label: "In Stock", num: true },
+      ],
+    });
+
+    return {
+      filters: filterBar(["date", "channel", "state"]),
+      html: k + '<div class="grid">' +
+        '<div class="c6">' + card("Revenue by Product", null, prods.length ? columnChart(prods.slice(0, 8).map(function (p) { return { label: p.name, value: p.revenue, color: "var(--c1)" }; }), { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Profit by Product", null, prods.length ? columnChart(prods.slice().sort(function (a, b) { return b.profit - a.profit; }).slice(0, 8).map(function (p) { return { label: p.name, value: p.profit, color: "var(--good)" }; }), { fmt: inrShort }) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + cardFlush("Product Performance", "Computed from live order rows", tbl) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.stateanalytics = function () {
+    var o = fOrders();
+    var states = byKey(o, function (x) { return x.CustomerState; });
+    states.forEach(function (s, i) { s.__i = i; s.margin = safeDiv(s.profit, s.revenue) * 100; s.rtoRate = safeDiv(s.rto, s.orders) * 100; });
+    states.sort(function (a, b) { return b.revenue - a.revenue; });
+
+    var k = kpiGrid([
+      { label: "States Selling", value: states.length || NA, icon: "users" },
+      { label: "Top State", value: states.length ? trunc(states[0].key, 18) : NA, icon: "money", small: true,
+        sub: states.length ? '<span><b>' + inrShort(states[0].revenue) + '</b> revenue</span>' : "" },
+      { label: "Revenue", value: o.length ? inr(sum(states, function (s) { return s.revenue; })) : NA, icon: "money" },
+      { label: "Profit", value: o.length ? inr(sum(states, function (s) { return s.profit; })) : NA, icon: "profit" },
+      { label: "Avg RTO Rate", value: states.length ? (sum(states, function (s) { return s.rtoRate; }) / states.length).toFixed(1) + "%" : NA, icon: "rto" },
+    ], "k5");
+
+    var tbl = table({
+      id: "state-tbl", rows: states, pageSize: 12, defaultSort: "revenue",
+      useGlobalSearch: true, searchKeys: ["key"], searchPlaceholder: "Search state…",
+      columns: [
+        { key: "key", label: "State", strong: true },
+        { key: "orders", label: "Orders", num: true },
+        { key: "units", label: "Units", num: true },
+        { key: "revenue", label: "Revenue", num: true, render: function (v) { return inr(v, "—"); } },
+        { key: "profit", label: "Profit", num: true, render: function (v) { return inr(v, "—"); }, tone: function (v) { return n(v) >= 0 ? "pos" : "neg"; } },
+        { key: "margin", label: "Profit Margin", num: true, render: function (v) { return v.toFixed(1) + "%"; } },
+        { key: "rtoRate", label: "RTO %", num: true, render: function (v) { return '<span class="chip ' + (v > 10 ? "crit" : "good") + '">' + v.toFixed(1) + '%</span>'; } },
+      ],
+    });
+
+    return {
+      filters: filterBar(["date", "channel", "status"]),
+      html: k + '<div class="grid">' +
+        '<div class="c6">' + card("Top 10 States by Revenue", null, states.length ? barsH(states.slice(0, 10).map(function (s) { return { label: s.key, value: s.revenue, color: "var(--c1)" }; }), { mono: true, fmt: inrShort, labelW: 165 }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Top 10 States by Profit", null, states.length ? barsH(states.slice().sort(function (a, b) { return b.profit - a.profit; }).slice(0, 10).map(function (s) { return { label: s.key, value: s.profit, color: "var(--good)" }; }), { fmt: inrShort, labelW: 165 }) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + card("State-wise Orders", null, states.length ? columnChart(states.slice(0, 10).map(function (s) { return { label: s.key, value: s.orders, color: "var(--c3)" }; }), { integer: true, fmt: intFmt, yFmt: intFmt }) : emptyBlock()) + '</div>' +
+        '<div class="c12">' + cardFlush("State Performance", "India state-level breakdown from Customer State", tbl) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.dailyreport = function () {
+    var days = uniq(S.orders.map(function (o) { return String(o.OrderDate).slice(0, 10); })).sort();
+    var sel = S.ui.reportDay && days.indexOf(S.ui.reportDay) !== -1 ? S.ui.reportDay : days[days.length - 1];
+    if (!sel) return { filters: "", html: card("Daily Report", null, emptyBlock("No dated orders available")) };
+    var o = S.orders.filter(function (x) { return String(x.OrderDate).slice(0, 10) === sel; });
+    var revenue = sum(o, function (x) { return x.Revenue; });
+    var profit = sum(o, function (x) { return x.NetProfit; });
+    var prods = byKey(o, function (x) { return x.SKU; }, function (x) { return x.ProductName || x.SKU; }).sort(function (a, b) { return b.revenue - a.revenue; });
+    var adSpend = sum(o, function (x) { return x.AdSpend; }) + sum(S.ads.filter(function (a) { return String(pick(a, ["Date"])).slice(0, 10) === sel; }), function (a) { return n(pick(a, ["Amount Spent"])); });
+
+    var picker = '<div class="filters"><div class="fld"><label>Report date</label><select data-ui="reportDay">' +
+      days.slice().reverse().map(function (d) { return '<option value="' + d + '"' + (d === sel ? " selected" : "") + '>' + fmtDate(d) + '</option>'; }).join("") +
+      '</select></div><span class="filter-count">' + o.length + ' orders on this date</span></div>';
+
+    var statusItems = statusBreakdown(o);
+
+    return {
+      filters: picker,
+      html: kpiGrid([
+        { label: "Revenue", value: inr(revenue), icon: "money" },
+        { label: "Orders", value: o.length, icon: "cart" },
+        { label: "Units", value: sum(o, function (x) { return x.Qty; }), icon: "box" },
+        { label: "Profit", value: inr(profit), icon: "profit", tone: profit >= 0 ? "good" : "crit" },
+        { label: "Ad Spend", value: inr(adSpend), icon: "ad" },
+        { label: "RTO", value: o.filter(isRTO).length, icon: "rto", tone: o.filter(isRTO).length ? "crit" : "good" },
+        { label: "Top Product", value: prods.length ? trunc(prods[0].name, 16) : NA, icon: "avg", small: true,
+          sub: prods.length ? '<span><b>' + inrShort(prods[0].revenue) + '</b></span>' : "" },
+      ], "kauto") + '<div class="grid">' +
+        '<div class="c6">' + card("Products Sold on " + fmtDate(sel), null, prods.length ? barsH(prods.map(function (p) { return { label: p.name, value: p.revenue, color: "var(--c1)" }; }), { mono: true, fmt: inr, labelW: 165 }) : emptyBlock()) + '</div>' +
+        '<div class="c6">' + card("Order Status", null, o.length ? donut(statusItems, { center: o.length, centerSub: "orders" }) + legend(statusItems.map(function (s) { return { label: s.label, color: s.color, value: s.value }; })) : emptyBlock()) + '</div>' +
+        '</div>',
+    };
+  };
+
+  P.monthlyreport = function () {
+    var months = uniq(S.orders.map(function (o) { return String(o.OrderDate).slice(0, 7); })).filter(function (m) { return /^\d{4}-\d{2}$/.test(m); }).sort();
+    var sel = S.ui.reportMonth && months.indexOf(S.ui.reportMonth) !== -1 ? S.ui.reportMonth : months[months.length - 1];
+    if (!sel) return { filters: "", html: card("Monthly Report", null, emptyBlock("No dated orders available")) };
+    var o = S.orders.filter(function (x) { return String(x.OrderDate).slice(0, 7) === sel; });
+    var revenue = sum(o, function (x) { return x.Revenue; });
+    var profit = sum(o, function (x) { return x.NetProfit; });
+    var amz = o.filter(function (x) { return x.Channel === "Amazon"; });
+    var web = o.filter(function (x) { return x.Channel === "Website"; });
+    var adsRows = S.ads.filter(function (a) { return String(pick(a, ["Date"])).slice(0, 7) === sel; });
+    var adSpend = sum(adsRows, function (a) { return n(pick(a, ["Amount Spent"])); });
+    var adRevenue = sum(adsRows, function (a) { return n(pick(a, ["Revenue"])); });
+    var b = bucket(o, "daily");
+
+    var label = new Date(sel + "-01").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    var picker = '<div class="filters"><div class="fld"><label>Report month</label><select data-ui="reportMonth">' +
+      months.slice().reverse().map(function (m) {
+        var t = new Date(m + "-01").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+        return '<option value="' + m + '"' + (m === sel ? " selected" : "") + '>' + t + '</option>';
+      }).join("") + '</select></div><span class="filter-count">' + o.length + ' orders in ' + esc(label) + '</span></div>';
+
+    return {
+      filters: picker,
+      html: kpiGrid([
+        { label: "Revenue", value: inr(revenue), icon: "money" },
+        { label: "Orders", value: o.length, icon: "cart" },
+        { label: "Units", value: sum(o, function (x) { return x.Qty; }), icon: "box" },
+        { label: "Profit", value: inr(profit), icon: "profit", tone: profit >= 0 ? "good" : "crit" },
+        { label: "Margin", value: revenue ? (profit / revenue * 100).toFixed(1) + "%" : NA, icon: "pct" },
+        { label: "Amazon", value: inr(sum(amz, function (x) { return x.Revenue; })), icon: "cart", sub: '<span><b>' + amz.length + '</b> orders</span>' },
+        { label: "Website", value: inr(sum(web, function (x) { return x.Revenue; })), icon: "cart", sub: '<span><b>' + web.length + '</b> orders</span>' },
+        { label: "Meta Ads", value: adsRows.length ? inr(adSpend) : NA, icon: "ad",
+          sub: adsRows.length ? '<span>ROAS <b>' + safeDiv(adRevenue, adSpend).toFixed(2) + 'x</b></span>' : "" },
+      ], "kauto") + '<div class="grid"><div class="c12">' +
+        card("Daily Revenue in " + label, null, b.length ? columnChart(b.map(function (r) { return { label: fmtShortDate(r.x), value: r.revenue, color: "var(--c1)" }; }), { fmt: inrShort }) : emptyBlock()) +
+        '</div></div>',
+    };
+  };
+
+  P.settings = function () {
+    var rows = [
+      ["Primary data source", S.source === "api" ? "Apps Script JSON API (direct)" : "Google Drive connector (fallback)"],
+      ["API endpoint", API_URL.replace(/^https:\/\/script\.google\.com\/macros\/s\//, "\u2026/").slice(0, 46) + "\u2026/exec"],
+      ["Spreadsheet ID", SHEET_ID],
+      ["Tabs mapped", "Products · Amazon · Website Orders · Meta ads · Dashboard"],
+      ["Write access", "None — this dashboard only reads, never modifies the sheet"],
+      ["Auto refresh", (REFRESH_MS / 1000) + " seconds"],
+      ["Last successful sync", S.lastSync ? new Date(S.lastSync).toLocaleString("en-IN") : "Not yet synced"],
+      ["Products rows loaded", S.products.length],
+      ["Amazon rows loaded", S.amazon.length],
+      ["Website Orders rows loaded", S.website.length],
+      ["Meta ads rows loaded", S.ads.length],
+      ["Dashboard tab keys", Object.keys(S.dash).length],
+    ];
+    var body = '<div style="display:flex;flex-direction:column">' + rows.map(function (r) {
+      return '<div class="kv"><span class="k">' + esc(r[0]) + '</span><span class="v">' + esc(r[1]) + '</span></div>';
+    }).join("") + '</div>';
+
+    var diag = Object.keys(S.dash).length
+      ? '<div style="display:flex;flex-direction:column">' + Object.keys(S.dash).slice(0, 24).map(function (k) {
+          return '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v">' + esc(S.dash[k]) + '</span></div>';
+        }).join("") + '</div>'
+      : emptyBlock("Dashboard tab not parsed");
+
+    return {
+      filters: "",
+      html: '<div class="grid">' +
+        '<div class="c6">' + card("Data Connection", "Live, read-only", body) + '</div>' +
+        '<div class="c6">' + card("Dashboard Tab Values", "Raw key/value pairs read from your Dashboard sheet", diag) + '</div>' +
+        '</div>',
+    };
+  };
+
+  /* =========================================================
+     order drawer
+     ========================================================= */
+  var drawerRows = [];
+  function openOrder(row) {
+    if (!row) return;
+    var f = [
+      ["Channel", esc(row.Channel)], ["Order Date", fmtDate(row.OrderDate)], ["Order ID", esc(row.OrderID) || "—"],
+      ["SKU", esc(row.SKU) || "—"], ["Product Name", esc(row.ProductName) || "—"],
+      ["Quantity", row.Qty || "—"], ["Selling Price", inr(row.SellingPrice, "—")], ["Revenue", inr(row.Revenue, "—")],
+      ["Product Cost", inr(row.ProductCost, "—")],
+      ["Amazon Fee", row.Channel === "Amazon" ? inr(row.AmazonFee, "—") : "n/a"],
+      ["Shipping Fee", inr(row.ShippingFee, "—")], ["Packaging Cost", inr(row.Packaging, "—")],
+      ["Ad Spend", inr(row.AdSpend, "—")], ["RTO Charges", inr(row.RTOCharges, "—")],
+      ["Net Profit", inr(row.NetProfit, "—")], ["Profit %", has(row.ProfitPct) ? esc(row.ProfitPct) : "—"],
+      ["Order Status", has(row.OrderStatus) ? '<span class="chip ' + statusTone(row.OrderStatus) + '">' + esc(row.OrderStatus) + '</span>' : "—"],
+      ["Customer State", esc(row.CustomerState) || "—"],
+      ["Payment Status", esc(row.PaymentStatus) || "—"], ["Courier Partner", esc(row.Courier) || "—"],
+      ["Return Reason", esc(row.ReturnReason) || "—"],
+    ];
+    document.getElementById("drawer-body").innerHTML =
+      '<div class="crumb" style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Order detail</div>' +
+      '<h3 style="font-size:19px;margin:3px 0 2px">' + (esc(row.OrderID) || "Order") + '</h3>' +
+      '<div class="note" style="margin-bottom:14px">' + esc(row.ProductName || "") + '</div>' +
+      f.map(function (x) { return '<div class="kv"><span class="k">' + x[0] + '</span><span class="v">' + x[1] + '</span></div>'; }).join("");
+    document.getElementById("ovl").classList.add("show");
+    document.getElementById("drawer").classList.add("show");
+  }
+  function closeDrawer() {
+    document.getElementById("ovl").classList.remove("show");
+    document.getElementById("drawer").classList.remove("show");
+  }
+
+  /* =========================================================
+     navigation
+     ========================================================= */
+  var ICONS = {
+    dash: '<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>',
+    amazon: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L21 7H6"/>',
+    web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/>',
+    ads: '<path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1Z"/><path d="M16.5 9a4 4 0 0 1 0 6"/>',
+    orders: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.6" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="3.6" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="3.6" cy="18" r="1.1" fill="currentColor" stroke="none"/>',
+    products: '<path d="M20.6 12.3 12.6 20.3a2 2 0 0 1-2.8 0l-6-6a2 2 0 0 1 0-2.8L11.7 3.6h8.9v8.7Z"/><circle cx="16" cy="8" r="1.3"/>',
+    customers: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11a3 3 0 1 0-1.8-5.4M17.6 20a6.4 6.4 0 0 0-2-4.6"/>',
+    inventory: '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v9l9 5 9-5V8"/><path d="M12 13v9"/>',
+    low: '<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/>',
+    out: '<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+    sales: '<path d="M4 20V10M10 20V4M16 20v-6M22 20H2"/>',
+    profit: '<path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/>',
+    prodan: '<path d="m12 3 2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6Z"/>',
+    map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+    daily: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/>',
+    monthly: '<rect x="3" y="5" width="18" height="16" rx="2.2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13.1a7.7 7.7 0 0 0 0-2.2l2-1.5-2-3.5-2.4 1a7.6 7.6 0 0 0-1.9-1.1L14.8 3H9.2l-.3 2.8a7.6 7.6 0 0 0-1.9 1.1l-2.4-1-2 3.5 2 1.5a7.7 7.7 0 0 0 0 2.2l-2 1.5 2 3.5 2.4-1a7.6 7.6 0 0 0 1.9 1.1L9.2 21h5.6l.3-2.8a7.6 7.6 0 0 0 1.9-1.1l2.4 1 2-3.5Z"/>',
+  };
+  var NAV = [
+    { g: "Overall", items: [["dashboard", "Dashboard", "dash"]] },
+    { g: "Sales Channels", items: [["amazon", "Amazon", "amazon"], ["website", "Website", "web"], ["metaads", "Meta Ads", "ads"]] },
+    { g: "Sales", items: [["orders", "Orders", "orders"], ["products", "Products", "products"], ["customers", "Customers", "customers"]] },
+    { g: "Inventory", items: [["inventory", "Inventory Overview", "inventory"], ["lowstock", "Low Stock", "low"], ["outofstock", "Out of Stock", "out"]] },
+    { g: "Analytics", items: [["salesanalytics", "Sales Analytics", "sales"], ["profitanalytics", "Profit Analytics", "profit"], ["productanalytics", "Product Analytics", "prodan"], ["stateanalytics", "State-wise Analytics", "map"]] },
+    { g: "Reports", items: [["dailyreport", "Daily Report", "daily"], ["monthlyreport", "Monthly Report", "monthly"]] },
+    { g: "Settings", items: [["settings", "Settings", "settings"]] },
+  ];
+  var TITLES = {
+    dashboard: ["Overall", "Dashboard"], amazon: ["Sales Channels", "Amazon Performance"],
+    website: ["Sales Channels", "Website Performance"], metaads: ["Sales Channels", "Meta Ads Performance"],
+    orders: ["Sales", "Orders"], products: ["Sales", "Products"], customers: ["Sales", "Customers"],
+    inventory: ["Inventory", "Inventory Overview"], lowstock: ["Inventory", "Low Stock"], outofstock: ["Inventory", "Out of Stock"],
+    salesanalytics: ["Analytics", "Sales Analytics"], profitanalytics: ["Analytics", "Profit Analytics"],
+    productanalytics: ["Analytics", "Product Analytics"], stateanalytics: ["Analytics", "State-wise Analytics"],
+    dailyreport: ["Reports", "Daily Report"], monthlyreport: ["Reports", "Monthly Report"], settings: ["Settings", "Settings"],
+  };
+
+  function alerts() {
+    var out = [];
+    S.products.forEach(function (p) {
+      var st = stockState(p);
+      if (st.key === "out") out.push({ tone: "var(--crit)", t: pick(p, ["Product Name"]) || pick(p, ["SKU"]), s: "Out of stock — reorder now" });
+      else if (st.key === "urgent") out.push({ tone: "var(--crit)", t: pick(p, ["Product Name"]) || pick(p, ["SKU"]), s: "Urgent reorder · " + n(pick(p, ["Current Stock"])) + " left" });
+      else if (st.key === "low") out.push({ tone: "var(--warn)", t: pick(p, ["Product Name"]) || pick(p, ["SKU"]), s: "Low stock · " + n(pick(p, ["Current Stock"])) + " left" });
+    });
+    var rtoOrders = S.orders.filter(isRTO);
+    if (S.orders.length && (rtoOrders.length / S.orders.length) > 0.1) {
+      out.unshift({ tone: "var(--crit)", t: "High RTO rate", s: rtoOrders.length + " of " + S.orders.length + " orders returned (" + (rtoOrders.length / S.orders.length * 100).toFixed(0) + "%)" });
+    }
+    return out;
+  }
+
+  function renderNav() {
+    var lowCount = S.products.filter(function (p) { var k = stockState(p).key; return k === "low" || k === "urgent"; }).length;
+    var outCount = S.products.filter(function (p) { return stockState(p).key === "out"; }).length;
+    var badges = { lowstock: lowCount, outofstock: outCount };
+    document.getElementById("nav").innerHTML = NAV.map(function (grp) {
+      return '<div class="nav-group"><div class="nav-label">' + esc(grp.g) + '</div>' + grp.items.map(function (it) {
+        var b = badges[it[0]];
+        return '<button class="nav-item' + (S.route === it[0] ? " active" : "") + '" data-r="' + it[0] + '" type="button">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ICONS[it[2]] + '</svg>' +
+          '<span>' + esc(it[1]) + '</span>' + (b ? '<span class="nav-badge">' + b + '</span>' : '') + '</button>';
+      }).join("") + '</div>';
+    }).join("");
+    document.getElementById("nav").querySelectorAll("[data-r]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        location.hash = "#/" + b.getAttribute("data-r");
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("scrim").classList.remove("show");
+      });
+    });
+
+    var al = alerts();
+    var badge = document.getElementById("notif-badge");
+    badge.hidden = !al.length;
+    badge.textContent = al.length > 9 ? "9+" : al.length;
+    document.getElementById("notif-list").innerHTML = al.length ? al.slice(0, 8).map(function (a) {
+      return '<div class="dd-item"><span class="ico" style="background:' + a.tone + '"></span><span><div class="t">' + esc(a.t) + '</div><div class="s">' + esc(a.s) + '</div></span></div>';
+    }).join("") : '<div class="dd-item"><span class="ico" style="background:var(--good)"></span><span><div class="t">All clear</div><div class="s">No stock or RTO alerts right now</div></span></div>';
+
+    document.getElementById("nav-source").innerHTML = "Source: <b>" +
+      (S.source === "api" ? "Apps Script API" : "Google Sheet") + "</b><br>" +
+      (S.loaded ? S.products.length + " SKUs · " + S.orders.length + " orders" : "Read-only · never modified");
+  }
+
+  function routeId() {
+    var h = (location.hash || "").replace(/^#\/?/, "");
+    return P[h] ? h : "dashboard";
+  }
+
+  var renderPending = false;
+  function render(after) {
+    S.route = routeId();
+    var t = TITLES[S.route] || ["", ""];
+    document.getElementById("crumb").textContent = t[0];
+    document.getElementById("ptitle").textContent = t[1];
+    renderNav();
+    var content = document.getElementById("content");
+    var page = P[S.route]();
+    content.innerHTML = (page.filters || "") + page.html;
+    wireFilters(content);
+    wireTables(content);
+    content.querySelectorAll("[data-ui]").forEach(function (el) {
+      el.addEventListener("change", function () { S.ui[el.getAttribute("data-ui")] = el.value; render(); });
+    });
+    content.querySelectorAll("[data-rid]").forEach(function (tr) {
+      tr.addEventListener("click", function () {
+        var p = tr.getAttribute("data-rid").split("");
+        // find the row by its index within the current filtered set
+        var set = S.route === "orders" ? fOrders() : fOrders(function (x) { return x.Channel === (S.route === "amazon" ? "Amazon" : "Website"); });
+        set.forEach(function (x, i) { x.__i = i; });
+        var found = set.filter(function (x) { return String(x.__i) === p[1]; })[0];
+        if (found) openOrder(found);
+      });
+    });
+    if (after) after();
+  }
+  window.addEventListener("hashchange", function () { closeDrawer(); render(); });
+
+  /* =========================================================
+     live data loading
+     ========================================================= */
+  function setLive(kind, text) {
+    var p = document.getElementById("live-pill");
+    p.className = "live-pill " + kind;
+    document.getElementById("live-text").textContent = text;
+  }
+  function setBanner(show, text) {
+    var b = document.getElementById("banner");
+    document.getElementById("banner-text").textContent = text || "";
+    b.classList.toggle("show", !!show);
+  }
+  function applyData(payload, source) {
+    var d = extractData(payload);
+    var got = d.products.length + d.amazon.length + d.website.length + d.ads.length + Object.keys(d.dash).length;
+    if (!got) return false;
+    S.products = d.products; S.amazon = d.amazon; S.website = d.website; S.ads = d.ads; S.dash = d.dash;
+    rebuildOrders();
+    S.loaded = true; S.source = source;
+    return true;
+  }
+  function markSynced(ts) {
+    S.lastSync = ts;
+    document.getElementById("sync-label").textContent = "Last updated: " + clock(ts);
+  }
+
+  function stopSpin() { document.getElementById("refresh").classList.remove("spinning"); }
+
+  /* =========================================================
+     LIVE DATA — direct fetch from the Apps Script JSON API.
+     Works in any normal browser. No Claude runtime required.
+     ========================================================= */
+
+  // Accept the payload whether the tabs sit at the top level or inside a wrapper.
+  function unwrap(json) {
+    if (!json || typeof json !== "object") return json;
+    var keys = ["Products", "Amazon", "Website Orders", "Meta ads", "Dashboard"];
+    function hasTabs(o) { return o && typeof o === "object" && keys.some(function (k) { return o[k] !== undefined; }); }
+    if (hasTabs(json)) return json;
+    var wrappers = ["data", "result", "payload", "sheets", "tabs", "body"];
+    for (var i = 0; i < wrappers.length; i++) if (hasTabs(json[wrappers[i]])) return json[wrappers[i]];
+    return json;
+  }
+
+  function fetchApi() {
+    var url = API_URL + (CACHE_BUST ? ((API_URL.indexOf("?") === -1 ? "?" : "&") + "_ts=" + Date.now()) : "");
+    var opts = { method: "GET", redirect: "follow", cache: "no-store" };
+    try { if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(25000); } catch (e) {}
+    return fetch(url, opts).then(function (r) {
+      if (!r.ok) throw { kind: "http", status: r.status };
+      return r.text();
+    }).then(function (txt) {
+      var t = String(txt).replace(/^\uFEFF/, "").trim();
+      if (t.charAt(0) === "<") throw { kind: "html" };
+      var json;
+      try { json = JSON.parse(t); } catch (e) { throw { kind: "parse" }; }
+      if (!applyData(unwrap(json), "api")) throw { kind: "shape" };
+      return true;
+    });
+  }
+
+  function apiError(e) {
+    var kind = e && e.kind;
+    var msg;
+    if (kind === "html") msg = "The API returned a web page instead of data — that usually means the deployment is not public. In Apps Script: Deploy \u2192 Manage deployments \u2192 edit \u2192 set \u201cWho has access\u201d to \u201cAnyone\u201d, then Deploy again.";
+    else if (kind === "http") msg = "The API responded with HTTP " + e.status + ". Check that the /exec URL in this file is the current deployment.";
+    else if (kind === "parse") msg = "The API response was not valid JSON. Open the /exec URL in a browser tab to see what it is returning.";
+    else if (kind === "shape") msg = "The API replied, but no Products / Amazon / Website Orders / Meta ads / Dashboard keys were found in it. Nothing has been changed \u2014 the dashboard is still showing the last good data.";
+    else msg = "Could not reach the API. If you opened this file straight from your computer, host it instead (see the setup notes) \u2014 and confirm the Apps Script deployment is set to \u201cAnyone\u201d.";
+    if (S.loaded) { setLive("stale", "LAST KNOWN"); }
+    else { setLive("err", "OFFLINE"); render(); }
+    setBanner(true, msg);
+  }
+
+  function boot() {
+    render();
+    setLive("", "CONNECTING");
+
+    var inFlight = false;
+    function load(manual) {
+      if (inFlight) return Promise.resolve();
+      inFlight = true;
+      if (manual) document.getElementById("refresh").classList.add("spinning");
+      if (S.loaded) setLive("stale", "SYNCING");
+      return fetchApi().then(function () {
+        markSynced(Date.now());
+        setLive("live", "LIVE");
+        setBanner(false);
+        render();
+      }).catch(apiError).then(function () {
+        inFlight = false;
+        stopSpin();
+      });
+    }
+
+    document.getElementById("refresh").addEventListener("click", function () { load(true); });
+
+    load(false).then(function () {
+      // If this file is ever opened inside Claude (direct fetch blocked there),
+      // fall back to reading the same spreadsheet through the Drive connector.
+      if (!S.loaded && window.claude && window.claude.use) {
+        window.claude.use("mcp").then(function (mcp) {
+          if (!mcp) return;
+          mcp.watchTool(MCP_SERVER, MCP_TOOL, { fileId: SHEET_ID }, handleMcpEvent, { refetchInterval: REFRESH_MS });
+        }).catch(function () {});
+      }
+    });
+
+    setInterval(function () { if (!document.hidden) load(false); }, REFRESH_MS);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) load(false); });
+  }
+
+  /* ---------- chrome wiring ---------- */
+  document.getElementById("burger").addEventListener("click", function () {
+    document.getElementById("sidebar").classList.add("open");
+    document.getElementById("scrim").classList.add("show");
+  });
+  document.getElementById("scrim").addEventListener("click", function () {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("scrim").classList.remove("show");
+  });
+  document.getElementById("drawer-x").addEventListener("click", closeDrawer);
+  document.getElementById("ovl").addEventListener("click", closeDrawer);
+  document.getElementById("notif-btn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    document.getElementById("notif-dd").classList.toggle("show");
+  });
+  document.addEventListener("click", function () { document.getElementById("notif-dd").classList.remove("show"); });
+  document.getElementById("notif-dd").addEventListener("click", function (e) { e.stopPropagation(); });
+  var gs = document.getElementById("global-search");
+  gs.addEventListener("input", function () {
+    S.globalSearch = gs.value;
+    Object.keys(S.tbl).forEach(function (k) { S.tbl[k].page = 1; });
+    render();
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
