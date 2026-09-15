@@ -2183,19 +2183,54 @@
   }
 
   function fetchApi() {
-    var url = API_URL + (CACHE_BUST ? ((API_URL.indexOf("?") === -1 ? "?" : "&") + "_ts=" + Date.now()) : "");
-    var opts = { method: "GET", redirect: "follow", cache: "no-store" };
-    try { if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(25000); } catch (e) {}
-    return fetch(url, opts).then(function (r) {
-      if (!r.ok) throw { kind: "http", status: r.status };
-      return r.text();
-    }).then(function (txt) {
-      var t = String(txt).replace(/^\uFEFF/, "").trim();
-      if (t.charAt(0) === "<") throw { kind: "html" };
-      var json;
-      try { json = JSON.parse(t); } catch (e) { throw { kind: "parse" }; }
-      if (!applyData(unwrap(json), "api")) throw { kind: "shape" };
-      return true;
+    return new Promise(function (resolve, reject) {
+      var callbackName = "__moutix_jsonp_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      var script = document.createElement("script");
+      var finished = false;
+      var timeout = setTimeout(function () {
+        cleanup();
+        reject({ kind: "timeout" });
+      }, 25000);
+
+      function cleanup() {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function (json) {
+        if (finished) return;
+        cleanup();
+        try {
+          if (!json || json.success !== true) {
+            reject({ kind: "api", error: json && json.error ? json.error : "API returned an error" });
+            return;
+          }
+          if (!applyData(unwrap(json), "api")) {
+            reject({ kind: "shape" });
+            return;
+          }
+          resolve(true);
+        } catch (e) {
+          reject({ kind: "parse" });
+        }
+      };
+
+      script.onerror = function () {
+        cleanup();
+        reject({ kind: "network" });
+      };
+
+      var url = API_URL +
+        (API_URL.indexOf("?") === -1 ? "?" : "&") +
+        "callback=" + encodeURIComponent(callbackName) +
+        (CACHE_BUST ? "&_ts=" + Date.now() : "");
+
+      script.async = true;
+      script.src = url;
+      document.head.appendChild(script);
     });
   }
 
